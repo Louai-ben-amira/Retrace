@@ -1,0 +1,293 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["relationJoins"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  clerkId        String   @unique
+  email          String   @unique
+  name           String?
+  image          String?
+  uiLanguage     String   @default("ar") // app interface language
+  nativeLanguage String   @default("ar") // which translation shown in reader
+  targetLanguage String   @default("en") // what they're learning (always "en" for now)
+  onboarded      Boolean  @default(false)
+  role           Role     @default(USER)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  progress          StoryProgress[]
+  streak            Streak?
+  subscription      Subscription?
+  lineAttempts      LineAttempt[]
+  wordBank          WordBankEntry[]
+  vocabWords        VocabWord[]
+  groupWordProgress VocabGroupProgress[]
+}
+
+model Story {
+  id                      String     @id @default(cuid())
+  slug                    String     @unique
+  title                   String
+  titleTranslations       Json       @default("{}") // { "ar": "...", "fr": "...", "es": "..." }
+  description             String?
+  descriptionTranslations Json       @default("{}")
+  difficulty              Difficulty @default(BEGINNER)
+  topic                   String?
+  isPremium               Boolean    @default(false)
+  isPublished             Boolean    @default(false)
+  isAIGenerated           Boolean    @default(false)
+  wordCount               Int        @default(0)
+  createdAt               DateTime   @default(now())
+  updatedAt               DateTime   @updatedAt
+
+  lines           Line[]
+  progress        StoryProgress[]
+  tags            StoryTag[]
+  wordBankEntries WordBankEntry[]
+  vocabWords      VocabWord[]
+}
+
+model Line {
+  id           String   @id @default(cuid())
+  storyId      String
+  position     Int
+  text         String
+  translations Json     @default("{}") // { "ar": "...", "fr": "...", "es": "...", "tr": "..." }
+  audioUrl     String?
+  vocabTags    Json?
+  grammarNote  String?
+  createdAt    DateTime @default(now())
+
+  story      Story         @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  attempts   LineAttempt[]
+  vocabWords VocabWord[]
+
+  @@unique([storyId, position])
+  @@index([storyId])
+}
+
+model LineAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  lineId    String
+  attempt   String
+  score     Float
+  passed    Boolean
+  timeMs    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  line Line @relation(fields: [lineId], references: [id], onDelete: Cascade)
+
+  @@index([userId, lineId])
+}
+
+model StoryProgress {
+  id             String    @id @default(cuid())
+  userId         String
+  storyId        String
+  currentLine    Int       @default(1)
+  completedLines Int       @default(0)
+  totalLines     Int
+  completed      Boolean   @default(false)
+  score          Float?
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+  updatedAt      DateTime  @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, storyId])
+}
+
+model Streak {
+  id           String    @id @default(cuid())
+  userId       String    @unique
+  current      Int       @default(0)
+  longest      Int       @default(0)
+  lastActivity DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  stripeCustomerId     String    @unique
+  stripeSubscriptionId String?   @unique
+  stripePriceId        String?
+  tier                 Tier      @default(FREE)
+  status               SubStatus @default(ACTIVE)
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StoryTag {
+  storyId String
+  tag     String
+  story   Story  @relation(fields: [storyId], references: [id])
+
+  @@id([storyId, tag])
+}
+
+model WordBankEntry {
+  id            String        @id @default(cuid())
+  userId        String
+  storyId       String
+  word          String
+  translations  Json          @default("{}") // { "ar": "...", "fr": "...", ... } — copied from Line.vocabTags at collection time
+  example       String
+  topic         String?
+  frequencyRank FrequencyBand @default(BEYOND_5000)
+  timesSeen     Int           @default(1)
+
+  // Spaced repetition (SM-2). A brand-new card has reviewCount 0 and is due immediately.
+  interval     Int       @default(0)
+  easeFactor   Float     @default(2.5)
+  reviewCount  Int       @default(0)
+  dueDate      DateTime  @default(now())
+  lastReviewed DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, word])
+  @@index([userId, dueDate])
+  @@index([userId, topic])
+}
+
+// Standalone vocabulary system (separate from WordBankEntry by design) — literal SM-2 fields
+// (nextReviewAt/masteryLevel) and a direct lineId link so review cards can show the exact
+// original sentence a word was learned from.
+model VocabWord {
+  id           String       @id @default(cuid())
+  userId       String
+  lineId       String
+  storyId      String
+  word         String
+  translations Json         @default("{}") // { "ar": "...", "fr": "...", ... } — copied from Line.vocabTags at collection time
+  topic        String?
+  frequency    Int          @default(0) // how common in English (1 = most common)
+  masteryLevel MasteryLevel @default(NEW)
+  nextReviewAt DateTime     @default(now())
+  reviewCount  Int          @default(0)
+  easeFactor   Float        @default(2.5) // SRS ease factor
+  interval     Int          @default(1) // days until next review
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  line  Line  @relation(fields: [lineId], references: [id], onDelete: Cascade)
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, word])
+  @@index([userId, masteryLevel])
+  @@index([userId, nextReviewAt])
+}
+
+enum MasteryLevel {
+  NEW
+  LEARNING
+  GOOD
+  MASTERED
+}
+
+// Admin-curated word lists (distinct from the auto-collected VocabWord/WordBankEntry
+// systems) — authored via AI generation, reviewed and published by an admin, then
+// browsed and studied by users independent of story-reading progress.
+model VocabGroup {
+  id                String     @id @default(cuid())
+  slug              String     @unique
+  name              String
+  titleTranslations Json       @default("{}") // { "ar": "...", "fr": "...", "es": "..." }
+  emoji             String     @default("📖")
+  difficulty        Difficulty @default(BEGINNER)
+  isPremium         Boolean    @default(false)
+  isPublished       Boolean    @default(false)
+  wordTarget        Int        @default(20)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  words    VocabGroupWord[]
+  progress VocabGroupProgress[]
+}
+
+model VocabGroupWord {
+  id           String   @id @default(cuid())
+  groupId      String
+  word         String
+  translations Json     @default("{}") // { "ar": "...", "fr": "...", "es": "...", "tr": "..." }
+  example      String
+  position     Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  group    VocabGroup           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  progress VocabGroupProgress[]
+
+  @@index([groupId])
+}
+
+// One row per (user, word) once the user has studied that word at least once.
+// Presence of a row = "seen"; `learned` = explicitly marked known during study.
+model VocabGroupProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  groupId   String
+  wordId    String
+  learned   Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+
+  user  User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group VocabGroup     @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  word  VocabGroupWord @relation(fields: [wordId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, wordId])
+  @@index([userId, groupId])
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Tier {
+  FREE
+  PRO
+}
+
+enum SubStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+}
+
+enum FrequencyBand {
+  TOP_500
+  TOP_1000
+  TOP_2000
+  TOP_5000
+  BEYOND_5000
+}
