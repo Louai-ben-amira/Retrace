@@ -7,7 +7,7 @@ Learn English through stories — built for Arabic speakers.
 - **Clerk** — authentication
 - **Prisma + PostgreSQL** — database
 - **OpenAI API** — AI story generation, vocab tagging, grammar explanations
-- **Stripe** — subscriptions
+- **Paddle** — subscriptions (merchant of record)
 - **ElevenLabs** — TTS audio
 - **Tailwind CSS** — styling
 
@@ -29,7 +29,10 @@ Copy `.env.local` and fill in your keys:
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_SECRET_KEY` | clerk.com → your app → API keys |
 | `OPENAI_API_KEY` | platform.openai.com |
 | `ELEVENLABS_API_KEY` | elevenlabs.io |
-| `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` + `STRIPE_PRO_PRICE_ID` | dashboard.stripe.com |
+| `PADDLE_WEBHOOK_SECRET` | Paddle dashboard → Developer tools → Notifications → your destination |
+| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` | Paddle dashboard → Developer tools → Authentication → Client-side tokens |
+| `NEXT_PUBLIC_PADDLE_PRO_PRICE_ID` | Paddle dashboard → Catalog → Prices (`pri_…`) |
+| `NEXT_PUBLIC_PADDLE_ENV` | `sandbox` or `production` — must match the token above |
 | `BLOB_READ_WRITE_TOKEN` | Vercel → Storage → Blob |
 | `VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` + `VAPID_EMAIL` + `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | `npx web-push generate-vapid-keys` |
 | `CRON_SECRET` | Any long random string — authenticates the daily push cron |
@@ -50,14 +53,32 @@ In the Clerk dashboard:
 - Add `CLERK_WEBHOOK_SECRET` to your `.env.local`
 - Set redirect URLs: sign-in → `/library`, sign-up → `/library`
 
-### 5. Make yourself an admin
+### 5. Configure Paddle
+
+This integration holds **no Paddle API key**. Checkout runs entirely in the browser via
+Paddle.js, and the webhook route verifies signatures with the webhook secret alone, so
+there is no server-side Paddle client and nothing to leak.
+
+In the Paddle dashboard (start in **sandbox**, then repeat in production):
+- **Catalog → Products** — create the Pro product, then add a recurring **Price**. Copy its `pri_…` id into `NEXT_PUBLIC_PADDLE_PRO_PRICE_ID`.
+- Set the **trial period** on that price to **7 days**. Paddle attaches trials to the price, not to the checkout, so the "free for 7 days" promise in `lib/i18n/landing.ts` comes from here — there is no code path that can add it.
+- **Developer tools → Authentication** — create a client-side token (`NEXT_PUBLIC_PADDLE_CLIENT_TOKEN`). You do *not* need an API key. Tokens are environment-scoped: a sandbox token only works against sandbox.
+- **Developer tools → Notifications** — add a destination pointing at `https://your-domain.com/api/subscriptions/webhook` subscribed to `subscription.created`, `subscription.updated`, `subscription.activated`, `subscription.trialing`, `subscription.past_due`, `subscription.paused`, `subscription.resumed`, `subscription.canceled`. Copy the secret into `PADDLE_WEBHOOK_SECRET`.
+- **Checkout → Website approval** — approve the domain you serve the overlay checkout from. Paddle.js refuses to open on unapproved domains (`localhost` is allowed in sandbox).
+- Set `NEXT_PUBLIC_PADDLE_ENV` to `sandbox` or `production` to match the token you used.
+
+#### What running without an API key costs you
+- **No in-app subscription management.** Paddle's customer portal links are short-lived and only issued by the API. Settings tells Pro users to use the link in their Paddle receipt email instead.
+- **Admin downgrade is access-only.** Setting a user to Free in the admin drawer revokes Pro in this database but cannot stop Paddle billing — cancel the subscription in the Paddle dashboard as well. The drawer warns about this when the user has a real subscription on file.
+
+### 6. Make yourself an admin
 
 After signing up, run this once in psql or Prisma Studio:
 ```sql
 UPDATE "User" SET role = 'ADMIN' WHERE email = 'your@email.com';
 ```
 
-### 6. Run dev server
+### 7. Run dev server
 ```bash
 npm run dev
 # → http://localhost:3000

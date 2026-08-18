@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
 import { LanguagePreferences } from "@/components/settings/LanguagePreferences";
+import { UpgradeButton } from "@/components/settings/UpgradeButton";
 import { getAppCopy } from "@/lib/i18n/app";
 import type { Metadata } from "next";
 
@@ -73,10 +74,11 @@ export default async function SettingsPage() {
                 <span className="text-cream text-end">{formatDate(user.subscription.currentPeriodEnd)}</span>
               </div>
             )}
+            {/* Paddle is the merchant of record and hosts the only authenticated portal.
+                Its links are short-lived and issued through the Paddle API, so with no API
+                key there is nothing to link to from here — the receipt email is the route. */}
             <div className="pt-3 border-t border-white/[0.08]">
-              <a href="/api/subscriptions/portal" className="text-sm text-rose-400 hover:text-rose-300 hover:underline transition-colors">
-                {t.settings.manageSubscription}
-              </a>
+              <p className="text-sm text-cream/40">{t.settings.manageViaReceipt}</p>
             </div>
           </div>
         ) : (
@@ -84,12 +86,7 @@ export default async function SettingsPage() {
             <p className="text-sm text-cream/50 mb-4">
               {t.settings.upgradeCopy}
             </p>
-            <a
-              href="/api/subscriptions/create-checkout"
-              className="inline-block w-full xs:w-auto text-center bg-brand-500 text-ink text-sm font-semibold px-5 py-3 rounded-lg shadow-[0_0_24px_rgba(14,207,183,0.2)] hover:bg-brand-300 sm:hover:-translate-y-px transition-all duration-200"
-            >
-              {t.settings.upgradeCta}
-            </a>
+            {user && <UpgradeButton userId={user.id} email={user.email} />}
           </div>
         )}
       </Card>

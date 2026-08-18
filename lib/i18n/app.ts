@@ -50,9 +50,10 @@ export interface AppCopy {
     subscription: string;
     status: string;
     renews: string;
-    manageSubscription: string;
+    manageViaReceipt: string;
     upgradeCopy: string;
     upgradeCta: string;
+    checkoutError: string;
     savedToast: string;
     errorToast: string;
   };
@@ -249,9 +250,10 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       subscription: "الاشتراك",
       status: "الحالة",
       renews: "يتجدد في",
-      manageSubscription: "إدارة الاشتراك أو إلغاؤه",
+      manageViaReceipt: "لتحديث بيانات الدفع أو إلغاء الاشتراك، استخدم الرابط الموجود في رسالة إيصال Paddle.",
       upgradeCopy: "قم بالترقية إلى برو لفتح جميع القصص والمحتوى المولّد بالذكاء الاصطناعي والتحكم في سرعة الصوت.",
       upgradeCta: "الترقية إلى برو",
+      checkoutError: "تعذّر فتح صفحة الدفع. يُرجى المحاولة مرة أخرى.",
       savedToast: "تم حفظ التفضيلات.",
       errorToast: "تعذر حفظ التغيير — حاول مرة أخرى.",
     },
@@ -446,9 +448,10 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       subscription: "Abonnement",
       status: "Statut",
       renews: "Renouvellement",
-      manageSubscription: "Gérer ou annuler l'abonnement",
+      manageViaReceipt: "Pour modifier votre moyen de paiement ou résilier, utilisez le lien dans l'e-mail de reçu Paddle.",
       upgradeCopy: "Passez à Pro pour débloquer toutes les histoires, le contenu généré par IA et le contrôle de la vitesse audio.",
       upgradeCta: "Passer à Pro",
+      checkoutError: "Impossible d'ouvrir le paiement. Veuillez réessayer.",
       savedToast: "Préférences enregistrées.",
       errorToast: "Impossible d'enregistrer — réessayez.",
     },
@@ -643,9 +646,10 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       subscription: "Abonelik",
       status: "Durum",
       renews: "Yenilenme tarihi",
-      manageSubscription: "Aboneliği yönet veya iptal et",
+      manageViaReceipt: "Ödeme bilgilerini güncellemek veya iptal etmek için Paddle makbuz e-postasındaki bağlantıyı kullanın.",
       upgradeCopy: "Tüm hikayelerin, yapay zeka içeriğinin ve ses hızı kontrolünün kilidini açmak için Pro'ya geçin.",
       upgradeCta: "Pro'ya geç",
+      checkoutError: "Ödeme ekranı açılamadı. Lütfen tekrar deneyin.",
       savedToast: "Tercihler kaydedildi.",
       errorToast: "Kaydedilemedi — tekrar deneyin.",
     },
@@ -840,9 +844,10 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       subscription: "Suscripción",
       status: "Estado",
       renews: "Se renueva",
-      manageSubscription: "Gestionar o cancelar suscripción",
+      manageViaReceipt: "Para actualizar tu método de pago o cancelar, usa el enlace del correo de recibo de Paddle.",
       upgradeCopy: "Mejora a Pro para desbloquear todas las historias, contenido generado por IA y control de velocidad de audio.",
       upgradeCta: "Mejorar a Pro",
+      checkoutError: "No se pudo abrir el pago. Inténtalo de nuevo.",
       savedToast: "Preferencias guardadas.",
       errorToast: "No se pudo guardar — inténtalo de nuevo.",
     },
@@ -1037,9 +1042,10 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       subscription: "Subscription",
       status: "Status",
       renews: "Renews",
-      manageSubscription: "Manage or cancel subscription",
+      manageViaReceipt: "To update payment details or cancel, use the link in your Paddle receipt email.",
       upgradeCopy: "Upgrade to Pro to unlock every story, AI-generated content, and audio speed control.",
       upgradeCta: "Upgrade to Pro",
+      checkoutError: "Couldn't open checkout. Please try again.",
       savedToast: "Preferences saved.",
       errorToast: "Couldn't save — try again.",
     },

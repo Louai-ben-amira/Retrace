@@ -4,7 +4,13 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Runtime queries go through the transaction pooler (port 6543) so that serverless
+  // invocations do not each hold a Postgres connection open.
+  url       = env("DATABASE_URL")
+  // Migrations cannot run through a transaction pooler — they need a session-mode or
+  // direct connection (port 5432). Falls back to DATABASE_URL when unset, which is what
+  // local development uses.
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -125,9 +131,9 @@ model Streak {
 model Subscription {
   id                   String    @id @default(cuid())
   userId               String    @unique
-  stripeCustomerId     String    @unique
-  stripeSubscriptionId String?   @unique
-  stripePriceId        String?
+  paddleCustomerId     String    @unique
+  paddleSubscriptionId String?   @unique
+  paddlePriceId        String?
   tier                 Tier      @default(FREE)
   status               SubStatus @default(ACTIVE)
   currentPeriodEnd     DateTime?

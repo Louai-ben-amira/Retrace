@@ -20,8 +20,8 @@ interface UserDetail {
     status: string;
     currentPeriodEnd: string | null;
     cancelAtPeriodEnd: boolean;
-    stripeCustomerId: string;
-    stripeSubscriptionId: string | null;
+    paddleCustomerId: string;
+    paddleSubscriptionId: string | null;
     createdAt: string;
   } | null;
   streak: { current: number; longest: number; lastActivity: string | null } | null;
@@ -153,8 +153,8 @@ export function UserDrawer({ userId, onClose, onPlanChange }: UserDrawerProps) {
                     <div>Renews: <span className="text-cream/80">{formatDate(data.subscription.currentPeriodEnd)}</span></div>
                   )}
                   {data.subscription.cancelAtPeriodEnd && <div className="text-amber-400">Cancels at period end</div>}
-                  {!data.subscription.stripeSubscriptionId && data.subscription.tier === "PRO" && (
-                    <div className="text-cream/40 text-xs">Admin-granted access — no active Stripe billing.</div>
+                  {!data.subscription.paddleSubscriptionId && data.subscription.tier === "PRO" && (
+                    <div className="text-cream/40 text-xs">Admin-granted access — no active Paddle billing.</div>
                   )}
                 </div>
               ) : (
@@ -166,7 +166,9 @@ export function UserDrawer({ userId, onClose, onPlanChange }: UserDrawerProps) {
                   <p className="text-sm text-cream/70 mb-3">
                     {confirming === "PRO"
                       ? "Grant this user free Pro access? This won't charge a card."
-                      : "Downgrade to Free? Any active Stripe subscription will be canceled immediately."}
+                      : data.subscription?.paddleSubscriptionId
+                        ? "Downgrade to Free? This revokes Pro access immediately, but does NOT stop Paddle billing — cancel the subscription in the Paddle dashboard as well, or this user keeps being charged."
+                        : "Downgrade to Free? This revokes Pro access immediately."}
                   </p>
                   <div className="flex gap-2">
                     <button
