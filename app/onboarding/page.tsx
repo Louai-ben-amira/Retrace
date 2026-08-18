@@ -1,7 +1,6 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { OnboardingFlow } from "@/components/onboarding/OnboardingFlow";
 import { isSupportedLanguage } from "@/lib/languages";
 import { UI_LANG_COOKIE, NATIVE_LANG_COOKIE } from "@/lib/i18n/cookies";
@@ -10,11 +9,8 @@ import type { Metadata } from "next";
 export const metadata: Metadata = { title: "Welcome" };
 
 export default async function OnboardingPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/login");
 
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  const user = await requireUser();
   if (user.onboarded) redirect("/library");
 
   // If they already picked languages on the landing page before signing up, carry

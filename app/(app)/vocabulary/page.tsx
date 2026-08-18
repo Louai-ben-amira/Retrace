@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { VocabularyGroupCard, type GroupCardData } from "@/components/vocabulary/VocabularyGroupCard";
 import { getAppCopy } from "@/lib/i18n/app";
 import type { Metadata } from "next";
@@ -15,14 +15,13 @@ export default async function VocabularyGroupsPage({ searchParams }: { searchPar
   if (!userId) redirect("/login");
 
   const [user, groups] = await Promise.all([
-    getCurrentUser(),
+    requireUser(),
     db.vocabGroup.findMany({
       where: searchParams.difficulty ? { difficulty: searchParams.difficulty as (typeof DIFFICULTIES)[number] } : undefined,
       include: { _count: { select: { words: true } } },
       orderBy: { createdAt: "desc" },
     }),
   ]);
-  if (!user) redirect("/login");
   const isPro = user.subscription?.tier === "PRO";
 
   const learnedCounts = await db.vocabGroupProgress.groupBy({

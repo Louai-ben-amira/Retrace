@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import type { MasteryLevel } from "@/lib/vocabSrs";
 import { TOPICS, topicMeta } from "@/lib/topics";
 import { VocabularySidebar } from "@/components/vocabulary/VocabularySidebar";
@@ -37,8 +37,7 @@ export default async function VocabularyPage({ searchParams }: { searchParams: {
   const { userId } = await auth();
   if (!userId) redirect("/login");
 
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  const user = await requireUser();
   const t = getAppCopy(user.uiLanguage);
 
   const words = await db.vocabWord.findMany({

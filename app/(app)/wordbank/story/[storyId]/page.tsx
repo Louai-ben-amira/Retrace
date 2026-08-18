@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { masteryLabel } from "@/lib/srs";
 import type { MasteryLevel } from "@/lib/srs";
 import { WordCard } from "@/components/wordbank/WordCard";
@@ -27,10 +27,9 @@ export default async function WordBankStoryPage({ params }: StoryPageProps) {
   if (!userId) redirect("/login");
 
   const [user, story] = await Promise.all([
-    getCurrentUser(),
+    requireUser(),
     db.story.findUnique({ where: { id: params.storyId } }),
   ]);
-  if (!user) redirect("/login");
   if (!story) notFound();
 
   const words = await db.wordBankEntry.findMany({

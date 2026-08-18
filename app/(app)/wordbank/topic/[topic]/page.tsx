@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { masteryLabel } from "@/lib/srs";
 import type { MasteryLevel } from "@/lib/srs";
 import { topicMeta } from "@/lib/topics";
@@ -26,8 +26,7 @@ export default async function WordBankTopicPage({ params }: TopicPageProps) {
   const { userId } = await auth();
   if (!userId) redirect("/login");
 
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  const user = await requireUser();
 
   const words = await db.wordBankEntry.findMany({
     where: { userId: user.id, topic: params.topic },

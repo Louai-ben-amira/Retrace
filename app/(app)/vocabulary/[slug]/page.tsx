@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { difficultyLabel } from "@/lib/utils";
 import { VocabularyGroupStudy } from "@/components/vocabulary/VocabularyGroupStudy";
 import { getTranslation, isRTL } from "@/lib/languages";
@@ -25,13 +25,12 @@ export default async function VocabularyGroupPage({ params }: GroupPageProps) {
   if (!userId) redirect("/login");
 
   const [user, group] = await Promise.all([
-    getCurrentUser(),
+    requireUser(),
     db.vocabGroup.findUnique({
       where: { slug: params.slug },
       include: { words: { orderBy: { position: "asc" } } },
     }),
   ]);
-  if (!user) redirect("/login");
   const isPro = user.subscription?.tier === "PRO";
   if (!group || !group.isPublished) notFound();
   if (group.isPremium && !isPro) redirect("/settings");

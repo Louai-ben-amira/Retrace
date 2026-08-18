@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import type { MasteryLevel } from "@/lib/vocabSrs";
 import { VocabularyWordCard } from "@/components/vocabulary/VocabularyWordCard";
 import { VocabularyMasteryBar } from "@/components/vocabulary/VocabularyMasteryBar";
@@ -26,10 +26,9 @@ export default async function VocabularyStoryPage({ params }: StoryPageProps) {
   if (!userId) redirect("/login");
 
   const [user, story] = await Promise.all([
-    getCurrentUser(),
+    requireUser(),
     db.story.findUnique({ where: { id: params.storyId } }),
   ]);
-  if (!user) redirect("/login");
   if (!story) notFound();
 
   const words = await db.vocabWord.findMany({

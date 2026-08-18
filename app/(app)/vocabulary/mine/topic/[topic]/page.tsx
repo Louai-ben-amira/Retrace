@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import type { MasteryLevel } from "@/lib/vocabSrs";
 import { topicMeta } from "@/lib/topics";
 import { VocabularyWordCard } from "@/components/vocabulary/VocabularyWordCard";
@@ -25,8 +25,7 @@ export default async function VocabularyTopicPage({ params }: TopicPageProps) {
   const { userId } = await auth();
   if (!userId) redirect("/login");
 
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  const user = await requireUser();
 
   const words = await db.vocabWord.findMany({
     where: { userId: user.id, topic: params.topic },

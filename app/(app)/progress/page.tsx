@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { Card } from "@/components/ui/Card";
 import { formatDate, difficultyLabel, difficultyColor } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
@@ -15,8 +15,7 @@ export default async function ProgressPage() {
   const { userId } = await auth();
   if (!userId) redirect("/login");
 
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  const user = await requireUser();
 
   const [progress, lineAttemptsCount] = await Promise.all([
     db.storyProgress.findMany({

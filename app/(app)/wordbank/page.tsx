@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { masteryLabel, MASTERY_META, type MasteryLevel } from "@/lib/srs";
 import { TOPICS, topicMeta } from "@/lib/topics";
 import { WordBankSidebar } from "@/components/wordbank/WordBankSidebar";
@@ -37,8 +37,7 @@ export default async function WordBankPage({ searchParams }: { searchParams: { f
   const { userId } = await auth();
   if (!userId) redirect("/login");
 
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  const user = await requireUser();
   const isPro = user.subscription?.tier === "PRO";
   const t = getAppCopy(user.uiLanguage);
 

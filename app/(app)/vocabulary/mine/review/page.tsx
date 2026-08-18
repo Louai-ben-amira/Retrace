@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { requireUser } from "@/lib/auth";
 import { VocabularyReviewSession } from "@/components/vocabulary/VocabularyReviewSession";
 import type { Metadata } from "next";
 
@@ -11,8 +11,7 @@ export default async function VocabularyReviewPage() {
   const { userId } = await auth();
   if (!userId) redirect("/login");
 
-  const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  const user = await requireUser();
 
   const cards = await db.vocabWord.findMany({
     where: { userId: user.id, nextReviewAt: { lte: new Date() } },

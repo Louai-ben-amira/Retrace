@@ -93,6 +93,8 @@ export async function POST(req: NextRequest) {
   }
 }
 
+const FREQUENCY_BANDS = new Set(["TOP_500", "TOP_1000", "TOP_2000", "TOP_5000", "BEYOND_5000"]);
+
 // Auto-collects the AI-tagged vocabulary from a completed line into the user's word bank.
 // A word bank entry is unique per (user, word) — repeat encounters just bump timesSeen
 // rather than overwriting the translations/example, so review context stays stable.
@@ -102,26 +104,39 @@ async function collectWordBank(userId: string, storyId: string, topic: string | 
   const tags = parseVocabTags(vocabTagsJson);
   if (tags.length === 0) return;
 
-  try {
-    await Promise.all(
-      tags.map((tag) =>
-        db.wordBankEntry.upsert({
-          where: { userId_word: { userId, word: tag.word.toLowerCase() } },
-          update: { timesSeen: { increment: 1 } },
-          create: {
-            userId,
-            storyId,
-            topic,
-            word: tag.word.toLowerCase(),
-            translations: tag.translations as unknown as Prisma.InputJsonValue,
-            example: tag.example,
-            frequencyRank: tag.frequencyRank,
-          },
-        })
-      )
-    );
-  } catch (err) {
-    console.error("[collectWordBank]", err);
+  // Every field here is untrusted despite what VocabTag declares: the tags are AI output
+  // stored as JSON, and older seeded rows predate the current shape. A word with no text
+  // cannot be stored at all, so those are dropped before they reach the database.
+  const usable = tags.filter((tag) => typeof tag?.word === "string" && tag.word.trim() !== "");
+
+  // allSettled, not all: these upserts are independent, and a single malformed tag used to
+  // reject the whole batch and silently discard every other word on the line.
+  const results = await Promise.allSettled(
+    usable.map((tag) =>
+      db.wordBankEntry.upsert({
+        where: { userId_word: { userId, word: tag.word.toLowerCase() } },
+        update: { timesSeen: { increment: 1 } },
+        create: {
+          userId,
+          storyId,
+          topic,
+          word: tag.word.toLowerCase(),
+          translations: (tag.translations ?? {}) as unknown as Prisma.InputJsonValue,
+          example: tag.example ?? "",
+          // frequencyRank is a non-nullable enum with a schema default, and a Prisma
+          // default only applies when the key is ABSENT — passing an explicit null throws.
+          // Untagged lines store null here, so forwarding it blindly meant every word from
+          // those lines was lost. Omit the key instead and let the default stand.
+          ...(FREQUENCY_BANDS.has(tag.frequencyRank as string) ? { frequencyRank: tag.frequencyRank } : {}),
+        },
+      })
+    )
+  );
+
+  for (const result of results) {
+    if (result.status === "rejected") {
+      console.error("[collectWordBank] entry failed", result.reason);
+    }
   }
 }
 
