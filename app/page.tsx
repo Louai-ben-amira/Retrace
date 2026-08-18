@@ -297,6 +297,10 @@ export default async function LandingPage() {
           <a href="#pricing" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.pricing}</a>
           <a href="/legal/privacy" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.privacy}</a>
           <a href="/legal/terms" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.terms}</a>
+          <a href="/legal/contact" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.contact}</a>
+          {/* The app itself, not another marketing anchor — signed-out visitors land on
+              /login and come back to the library once authenticated. */}
+          <Link href="/library" className="text-[13px] text-brand-400 hover:text-brand-300 transition-colors">{t.footer.openApp}</Link>
         </div>
         <div className="text-[13px] text-cream/30">© {new Date().getFullYear()} Retrace</div>
       </footer>

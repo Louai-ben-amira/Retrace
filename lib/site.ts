@@ -15,3 +15,9 @@ export function siteUrl(): string {
 
   return "http://localhost:3000";
 }
+
+/**
+ * Public support address, shown on the contact page and in the legal pages. Kept here
+ * rather than inlined so the three places that print it can never drift apart.
+ */
+export const SUPPORT_EMAIL = "louaibenaamira@gmail.com";

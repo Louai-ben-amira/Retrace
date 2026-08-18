@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { SUPPORT_EMAIL } from "@/lib/site";
 
 // Paddle is the merchant of record for Retrace, and its seller agreement requires publicly
 // reachable Terms and Privacy pages. These previously existed only as `href="#"` in the
@@ -19,7 +20,7 @@ const CONTENT: Record<string, { title: string; body: string[] }> = {
     body: [
       "Retrace collects your email address and learning progress to provide the service. We do not sell your data.",
       "Authentication is handled by Clerk. Audio is processed by ElevenLabs. Payments are handled by Paddle, who act as the merchant of record and process your billing details directly — Retrace never receives or stores your card information.",
-      "You can request access to, export of, or deletion of your data at any time. Contact us at hello@retrace.academy for any privacy request.",
+      `You can request access to, export of, or deletion of your data at any time. Contact us at ${SUPPORT_EMAIL} for any privacy request.`,
     ],
   },
   terms: {
@@ -27,7 +28,7 @@ const CONTENT: Record<string, { title: string; body: string[] }> = {
     body: [
       "By using Retrace you agree to use the service for personal learning only.",
       "Pro subscriptions are billed through Paddle. You may cancel at any time from your settings page, and access continues until the end of the paid period. Refunds are handled per Paddle's refund policy.",
-      "Story and vocabulary content is provided for learning use and remains the property of Retrace. Contact us at hello@retrace.academy with any question about these terms.",
+      `Story and vocabulary content is provided for learning use and remains the property of Retrace. Contact us at ${SUPPORT_EMAIL} with any question about these terms.`,
     ],
   },
 };
@@ -80,6 +81,7 @@ export default function LegalPage({ params }: { params: { slug: string } }) {
           <Link href="/legal/about" className="text-[13px] text-cream/50 hover:text-cream transition-colors">About</Link>
           <Link href="/legal/privacy" className="text-[13px] text-cream/50 hover:text-cream transition-colors">Privacy</Link>
           <Link href="/legal/terms" className="text-[13px] text-cream/50 hover:text-cream transition-colors">Terms</Link>
+          <Link href="/legal/contact" className="text-[13px] text-cream/50 hover:text-cream transition-colors">Contact</Link>
           <Link href="/" className="text-[13px] text-brand-400 hover:text-brand-300 transition-colors">Back to Retrace</Link>
         </div>
       </div>

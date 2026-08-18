@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { useTranslation } from "@/lib/i18n/TranslationProvider";
+import { useSoftKeyboardOpen } from "@/hooks/useSoftKeyboardOpen";
 
 // The header nav is `hidden sm:flex`, so below 640px this bar is the only way to move
 // between sections. Five destinations, thumb-reachable, with the same active-state rule
@@ -71,6 +72,10 @@ function Icon({ name, active }: { name: string; active: boolean }) {
 export function MobileTabBar() {
   const { t } = useTranslation();
   const pathname = usePathname();
+  // Typing is the one moment the bar is pure cost: it sits directly above the soft
+  // keyboard, covering the line being written and offering nothing the user wants
+  // mid-sentence. It slides back the moment the field is left.
+  const keyboardOpen = useSoftKeyboardOpen();
 
   const labels: Record<string, string> = {
     library: t.nav.library,
@@ -83,7 +88,12 @@ export function MobileTabBar() {
   return (
     <nav
       aria-label={t.nav.mainNavigation}
-      className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-white/[0.09] bg-ink/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
+      aria-hidden={keyboardOpen || undefined}
+      className={cn(
+        "sm:hidden fixed bottom-0 inset-x-0 z-40 border-t border-white/[0.09] bg-ink/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]",
+        "transition-transform duration-200 ease-out motion-reduce:transition-none",
+        keyboardOpen && "translate-y-full pointer-events-none"
+      )}
     >
       <ul className="flex items-stretch">
         {TABS.map((tab) => {
@@ -93,6 +103,9 @@ export function MobileTabBar() {
               <Link
                 href={tab.href}
                 aria-current={active ? "page" : undefined}
+                // Off-screen and aria-hidden, so it must leave the tab order too rather
+                // than handing focus to a link the user cannot see.
+                tabIndex={keyboardOpen ? -1 : undefined}
                 className={cn(
                   // min-h-14 keeps every tap target above the 44px accessibility floor.
                   "flex flex-col items-center justify-center gap-1 min-h-14 py-2 px-0.5 transition-colors",

@@ -73,6 +73,16 @@ export interface LandingCopy {
     pricing: string;
     privacy: string;
     terms: string;
+    contact: string;
+    openApp: string;
+  };
+  contactPage: {
+    title: string;
+    intro: string;
+    emailHeading: string;
+    emailCta: string;
+    responseNote: string;
+    backHome: string;
   };
 }
 
@@ -176,7 +186,15 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
       paragraph: "No app to download. No account required to start. Just open a story and begin.",
       cta: "Begin retracing →",
     },
-    footer: { about: "About", stories: "Stories", pricing: "Pricing", privacy: "Privacy", terms: "Terms" },
+    footer: { about: "About", stories: "Stories", pricing: "Pricing", privacy: "Privacy", terms: "Terms", contact: "Contact", openApp: "Open app" },
+    contactPage: {
+      title: "Contact us",
+      intro: "A question about your account, a billing issue, a story that reads wrong, or an idea for Retrace — write to us and a real person will read it.",
+      emailHeading: "Email",
+      emailCta: "Write to us",
+      responseNote: "We usually reply within two working days.",
+      backHome: "Back to Retrace",
+    },
   },
 
   ar: {
@@ -258,7 +276,15 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
       paragraph: "لا حاجة لتنزيل تطبيق. لا حاجة لحساب للبدء. فقط افتح قصة وابدأ.",
       cta: "ابدأ إعادة التتبّع ←",
     },
-    footer: { about: "حول", stories: "القصص", pricing: "الأسعار", privacy: "الخصوصية", terms: "الشروط" },
+    footer: { about: "حول", stories: "القصص", pricing: "الأسعار", privacy: "الخصوصية", terms: "الشروط", contact: "اتصل بنا", openApp: "افتح التطبيق" },
+    contactPage: {
+      title: "تواصل معنا",
+      intro: "سؤال عن حسابك، مشكلة في الدفع، خطأ في قصة، أو فكرة لتحسين Retrace — اكتب لنا وسيقرأ رسالتك شخص حقيقي.",
+      emailHeading: "البريد الإلكتروني",
+      emailCta: "راسلنا",
+      responseNote: "نرد عادةً خلال يومَي عمل.",
+      backHome: "العودة إلى Retrace",
+    },
   },
 
   fr: {
@@ -340,7 +366,15 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
       paragraph: "Pas d'application à télécharger. Aucun compte requis pour commencer. Ouvrez simplement une histoire et démarrez.",
       cta: "Commencer à retracer →",
     },
-    footer: { about: "À propos", stories: "Histoires", pricing: "Tarifs", privacy: "Confidentialité", terms: "Conditions" },
+    footer: { about: "À propos", stories: "Histoires", pricing: "Tarifs", privacy: "Confidentialité", terms: "Conditions", contact: "Contact", openApp: "Ouvrir l'app" },
+    contactPage: {
+      title: "Nous contacter",
+      intro: "Une question sur votre compte, un souci de facturation, une histoire qui sonne faux ou une idée pour Retrace — écrivez-nous, une vraie personne vous répondra.",
+      emailHeading: "E-mail",
+      emailCta: "Écrivez-nous",
+      responseNote: "Nous répondons généralement sous deux jours ouvrés.",
+      backHome: "Retour à Retrace",
+    },
   },
 
   tr: {
@@ -422,7 +456,15 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
       paragraph: "İndirilecek bir uygulama yok. Başlamak için hesap gerekmez. Sadece bir hikâye aç ve başla.",
       cta: "İzini sürmeye başla →",
     },
-    footer: { about: "Hakkında", stories: "Hikâyeler", pricing: "Fiyatlandırma", privacy: "Gizlilik", terms: "Koşullar" },
+    footer: { about: "Hakkında", stories: "Hikâyeler", pricing: "Fiyatlandırma", privacy: "Gizlilik", terms: "Koşullar", contact: "İletişim", openApp: "Uygulamayı aç" },
+    contactPage: {
+      title: "Bize ulaşın",
+      intro: "Hesabınızla ilgili bir soru, bir ödeme sorunu, hatalı bir hikâye ya da Retrace için bir fikir — bize yazın, mesajınızı gerçek bir insan okuyacak.",
+      emailHeading: "E-posta",
+      emailCta: "Bize yazın",
+      responseNote: "Genellikle iki iş günü içinde yanıtlıyoruz.",
+      backHome: "Retrace'e dön",
+    },
   },
 
   es: {
@@ -504,7 +546,15 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
       paragraph: "No hay que descargar ninguna app. No se necesita cuenta para empezar. Solo abre una historia y comienza.",
       cta: "Empieza a retrazar →",
     },
-    footer: { about: "Acerca de", stories: "Historias", pricing: "Precios", privacy: "Privacidad", terms: "Términos" },
+    footer: { about: "Acerca de", stories: "Historias", pricing: "Precios", privacy: "Privacidad", terms: "Términos", contact: "Contacto", openApp: "Abrir la app" },
+    contactPage: {
+      title: "Contacto",
+      intro: "¿Una duda sobre tu cuenta, un problema de facturación, una historia con errores o una idea para Retrace? Escríbenos y te responderá una persona real.",
+      emailHeading: "Correo electrónico",
+      emailCta: "Escríbenos",
+      responseNote: "Solemos responder en dos días laborables.",
+      backHome: "Volver a Retrace",
+    },
   },
 
 };
