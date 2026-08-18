@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
@@ -59,6 +60,9 @@ export async function POST(req: NextRequest) {
       },
       include: { lines: true, tags: true },
     });
+
+    revalidateTag("stories");
+
     return NextResponse.json({ story }, { status: 201 });
   } catch (err) {
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

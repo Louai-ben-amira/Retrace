@@ -67,7 +67,10 @@ export default async function ProgressPage() {
           <h2 className="text-base font-semibold text-cream/70 mb-4">{t.progress.inProgressSection}</h2>
           <div className="space-y-3">
             {progress.filter((p) => !p.completed && p.completedLines > 0).map((p) => {
-              const pct = Math.round((p.completedLines / p.totalLines) * 100);
+              // Clamped: a story whose line count shrank after someone started it, or any
+              // legacy row from before completedLines was derived rather than incremented,
+              // would otherwise overflow the bar past 100%.
+              const pct = Math.min(100, Math.round((p.completedLines / p.totalLines) * 100));
               return (
                 <Link key={p.id} href={`/story/${p.storyId}`} className="block bg-ink-surface border border-white/[0.07] rounded-xl p-5 hover:border-brand-500/30 hover:-translate-y-0.5 transition-all duration-300">
                   <div className="flex items-center justify-between mb-3">
@@ -99,7 +102,9 @@ export default async function ProgressPage() {
                   <p className="text-xs text-cream/40 mt-0.5">{p.completedAt ? t.progress.completedOn(formatDate(p.completedAt)) : "—"}</p>
                 </div>
                 <div className="text-right">
-                  {p.score && <p className="text-sm font-semibold text-brand-400">{Math.round(p.score)}%</p>}
+                  {/* `!= null`, not truthiness — a legitimate score of 0 is falsy, and
+                      React rendered the bare number 0 instead of the element. */}
+                  {p.score != null && <p className="text-sm font-semibold text-brand-400">{Math.round(p.score)}%</p>}
                   <Badge variant="brand">✓ {t.library.completed}</Badge>
                 </div>
               </div>

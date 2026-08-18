@@ -18,7 +18,7 @@ export default async function EditStoryPage({ params }: { params: { id: string }
         <h1 className="font-serif text-xl font-bold text-cream">Edit: {story.title}</h1>
         <p className="text-sm text-cream/40 mt-0.5">{story.lines.length} lines · {story.wordCount} words</p>
       </div>
-      <StoryEditForm story={story as any} />
+      <StoryEditForm story={story} />
     </div>
   );
 }

@@ -166,6 +166,7 @@ export interface AppCopy {
     tapToReveal: string;
     fromStory: (title: string) => string;
     reviewHint: string;
+    reviewSaveFailed: string;
     seenTimes: (n: number) => string;
     fromPrefix: string;
   };
@@ -371,6 +372,7 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       tapToReveal: "انقر أو اضغط مسافة للكشف",
       fromStory: (title) => `من ${title}`,
       reviewHint: "انقر على البطاقة لرؤية الإجابة، ثم قيّم مدى معرفتك بها",
+      reviewSaveFailed: "تعذّر الحفظ. حاول التقييم مرة أخرى.",
       seenTimes: (n) => ` · شوهدت ${n} مرة`,
       fromPrefix: "من ",
     },
@@ -574,6 +576,7 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       tapToReveal: "Touchez ou appuyez sur Espace pour révéler",
       fromStory: (title) => `de ${title}`,
       reviewHint: "Cliquez sur la carte pour voir la réponse, puis évaluez votre niveau de connaissance",
+      reviewSaveFailed: "Échec de l'enregistrement. Réessayez de noter ce mot.",
       seenTimes: (n) => ` · vu ${n}×`,
       fromPrefix: "de ",
     },
@@ -777,6 +780,7 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       tapToReveal: "Göstermek için dokunun veya Boşluk'a basın",
       fromStory: (title) => `${title} hikayesinden`,
       reviewHint: "Cevabı görmek için karta tıklayın, sonra ne kadar bildiğinizi değerlendirin",
+      reviewSaveFailed: "Kaydedilemedi. Tekrar puanlamayı deneyin.",
       seenTimes: (n) => ` · ${n} kez görüldü`,
       fromPrefix: "kaynak: ",
     },
@@ -980,6 +984,7 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       tapToReveal: "Toca o pulsa Espacio para revelar",
       fromStory: (title) => `de ${title}`,
       reviewHint: "Haz clic en la tarjeta para ver la respuesta, luego evalúa cuánto la sabías",
+      reviewSaveFailed: "No se pudo guardar. Intenta valorarla de nuevo.",
       seenTimes: (n) => ` · vista ${n}×`,
       fromPrefix: "de ",
     },
@@ -1183,6 +1188,7 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       tapToReveal: "Tap or press Space to reveal",
       fromStory: (title) => `from ${title}`,
       reviewHint: "Click the card to see the answer, then rate how well you knew it",
+      reviewSaveFailed: "Couldn't save — tap a rating to try again.",
       seenTimes: (n) => ` · seen ${n}×`,
       fromPrefix: "from ",
     },

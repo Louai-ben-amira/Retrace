@@ -3,9 +3,18 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
 
+/**
+ * Quotes a CSV field and neutralises spreadsheet formula injection.
+ *
+ * `name` and `email` originate from Clerk and are user-controlled, so a display name of
+ * `=HYPERLINK("http://evil","click")` became a live formula the moment an admin opened the
+ * export in Excel or Sheets. A leading apostrophe forces the cell to be read as text; it
+ * has to go inside the quotes to stay valid CSV.
+ */
 function csvField(value: string | number): string {
-  const str = String(value);
-  return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  let str = String(value);
+  if (/^[=+\-@\t\r]/.test(str)) str = `'${str}`;
+  return `"${str.replace(/"/g, '""')}"`;
 }
 
 export async function GET() {

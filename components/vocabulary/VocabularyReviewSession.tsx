@@ -32,6 +32,7 @@ export function VocabularyReviewSession({ initialCards, nativeLanguage = "ar" }:
   const [flipped, setFlipped] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [reviewed, setReviewed] = useState<ReviewedWord[]>([]);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const card = cards[index];
 
@@ -48,9 +49,13 @@ export function VocabularyReviewSession({ initialCards, nativeLanguage = "ar" }:
     return () => window.removeEventListener("keydown", onKey);
   }, [card]);
 
+  // The card only advances once the schedule is actually saved. Previously the advance sat
+  // outside the success branch, so a failed request silently dropped the rating, skipped
+  // the word in the summary, and left the user believing it had been recorded.
   async function handleRate(result: ReviewResult) {
     if (!card || submitting) return;
     setSubmitting(true);
+    setSaveError(null);
     try {
       const priorMastery: MasteryLevel = card.masteryLevel;
       const res = await fetch("/api/vocabulary/review", {
@@ -58,15 +63,21 @@ export function VocabularyReviewSession({ initialCards, nativeLanguage = "ar" }:
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ wordId: card.id, result }),
       });
-      if (res.ok) {
-        const data = (await res.json()) as { word: { masteryLevel: MasteryLevel; interval: number } };
-        setReviewed((r) => [
-          ...r,
-          { word: card.word, interval: data.word.interval, leveledUp: priorMastery !== "MASTERED" && data.word.masteryLevel === "MASTERED" },
-        ]);
+
+      if (!res.ok) {
+        setSaveError(t.wordbank.reviewSaveFailed);
+        return;
       }
+
+      const data = (await res.json()) as { word: { masteryLevel: MasteryLevel; interval: number } };
+      setReviewed((r) => [
+        ...r,
+        { word: card.word, interval: data.word.interval, leveledUp: priorMastery !== "MASTERED" && data.word.masteryLevel === "MASTERED" },
+      ]);
       setFlipped(false);
       setIndex((i) => i + 1);
+    } catch {
+      setSaveError(t.wordbank.reviewSaveFailed);
     } finally {
       setSubmitting(false);
     }
@@ -170,19 +181,26 @@ export function VocabularyReviewSession({ initialCards, nativeLanguage = "ar" }:
             </button>
 
             {flipped ? (
-              <div className="grid grid-cols-2 xs:grid-cols-4 gap-2 mt-6">
-                {RATINGS.map((r) => (
-                  <button
-                    key={r.value}
-                    type="button"
-                    disabled={submitting}
-                    onClick={() => void handleRate(r.value)}
-                    className={cn("py-3.5 sm:py-3 min-h-[48px] rounded-lg text-sm font-medium transition-colors disabled:opacity-50 active:scale-95", r.className)}
-                  >
-                    {r.label}
-                  </button>
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 xs:grid-cols-4 gap-2 mt-6">
+                  {RATINGS.map((r) => (
+                    <button
+                      key={r.value}
+                      type="button"
+                      disabled={submitting}
+                      onClick={() => void handleRate(r.value)}
+                      className={cn("py-3.5 sm:py-3 min-h-[48px] rounded-lg text-sm font-medium transition-colors disabled:opacity-50 active:scale-95", r.className)}
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+                {saveError && (
+                  <p role="alert" className="text-center text-sm text-rose-400 mt-4">
+                    {saveError}
+                  </p>
+                )}
+              </>
             ) : (
               <p className="text-center text-xs text-cream/30 mt-6">{t.wordbank.reviewHint}</p>
             )}

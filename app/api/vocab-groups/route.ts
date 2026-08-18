@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 import { slugify } from "@/lib/utils";
 
@@ -37,6 +38,8 @@ export async function POST(req: NextRequest) {
       },
       include: { words: true },
     });
+
+    revalidateTag("vocab-groups");
 
     return NextResponse.json({ group }, { status: 201 });
   } catch (err) {

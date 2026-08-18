@@ -24,14 +24,25 @@ export async function POST(req: NextRequest) {
     // The line attempt is recorded regardless of outcome — a fuzzy-graded "fail" still
     // reveals the answer and moves the reader on, so it needs to count toward the
     // story's average score below just as much as a pass does.
-    const [, story] = await Promise.all([
+    //
+    // Only three values are actually needed from the story and line here, so both are
+    // fetched narrowly. Loading `include: { lines: true }` pulled every line's full text,
+    // translations, vocabTags and grammarNotes JSON on a request that fires once per typed
+    // line — the hottest path in the app.
+    const [, story, line] = await Promise.all([
       db.lineAttempt.create({ data: { userId: user.id, lineId, attempt, score, passed, timeMs } }),
-      db.story.findUnique({ where: { id: storyId }, include: { lines: true } }),
+      db.story.findUnique({
+        where: { id: storyId },
+        select: { topic: true, _count: { select: { lines: true } } },
+      }),
+      db.line.findUnique({
+        where: { id: lineId },
+        select: { position: true, vocabTags: true },
+      }),
     ]);
     if (!story) return NextResponse.json({ error: "Story not found" }, { status: 404 });
 
-    const totalLines = story.lines.length;
-    const line = story.lines.find((l) => l.id === lineId);
+    const totalLines = story._count.lines;
     const position = line?.position ?? 1;
     const isLast = position === totalLines;
 
@@ -60,7 +71,10 @@ export async function POST(req: NextRequest) {
         where: { userId_storyId: { userId: user.id, storyId } },
         update: {
           currentLine: isLast ? position : position + 1,
-          completedLines: { increment: 1 },
+          // Derived from position, not accumulated. `{ increment: 1 }` kept counting on
+          // every replay of a finished story, pushing completedLines past totalLines and
+          // driving the progress bars above 100%.
+          completedLines: isLast ? totalLines : Math.min(position, totalLines),
           completed: isLast,
           completedAt: isLast ? new Date() : undefined,
           score: isLast ? finalScore : undefined,
@@ -69,7 +83,7 @@ export async function POST(req: NextRequest) {
           userId: user.id,
           storyId,
           currentLine: isLast ? position : position + 1,
-          completedLines: 1,
+          completedLines: isLast ? totalLines : Math.min(position, totalLines),
           totalLines,
           completed: isLast,
           completedAt: isLast ? new Date() : undefined,

@@ -2,6 +2,7 @@ import { cache } from "react";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
+import { isAdmin } from "@/lib/utils";
 
 const USER_INCLUDE = { subscription: true, streak: true } as const;
 
@@ -68,7 +69,17 @@ async function provisionUser(clerkId: string) {
     console.error("[getCurrentUser] no DB row for signed-in user, provisioning now", clerkId, email);
 
     return await db.user.create({
-      data: { clerkId, email, name, image: clerkUser.imageUrl, streak: { create: {} } },
+      // Role is resolved here too, not just in the webhook: this path exists precisely for
+      // when the webhook did not run, and an admin provisioned this way would otherwise be
+      // stuck as a USER until the next user.updated event.
+      data: {
+        clerkId,
+        email,
+        name,
+        image: clerkUser.imageUrl,
+        role: isAdmin(email) ? "ADMIN" : "USER",
+        streak: { create: {} },
+      },
       include: USER_INCLUDE,
     });
   } catch (err) {

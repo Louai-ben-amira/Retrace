@@ -9,11 +9,18 @@ import { toPaddleLocale } from "@/lib/paddle";
 // open checkout. The initialized instance is cached across clicks.
 let paddlePromise: Promise<Paddle | undefined> | null = null;
 
+// Read once at module scope. These were previously asserted non-null with `!`, which
+// type-checks happily against an empty string and then fails deep inside Paddle.js with
+// nothing useful in the console — the reason billing was silently dead.
+const PADDLE_TOKEN = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
+const PADDLE_PRICE_ID = process.env.NEXT_PUBLIC_PADDLE_PRO_PRICE_ID;
+
 function loadPaddle() {
+  if (!PADDLE_TOKEN) return Promise.resolve(undefined);
   if (!paddlePromise) {
     paddlePromise = initializePaddle({
       environment: process.env.NEXT_PUBLIC_PADDLE_ENV === "production" ? "production" : "sandbox",
-      token: process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN!,
+      token: PADDLE_TOKEN,
     }).catch((err) => {
       // Don't cache a rejected promise — a transient network failure shouldn't disable the
       // button for the rest of the session.
@@ -40,11 +47,15 @@ export function UpgradeButton({ userId, email }: UpgradeButtonProps) {
     setBusy(true);
     setError(false);
     try {
+      if (!PADDLE_TOKEN || !PADDLE_PRICE_ID) {
+        throw new Error("Paddle is not configured: missing client token or price id");
+      }
+
       const paddle = await loadPaddle();
       if (!paddle) throw new Error("Paddle.js failed to initialize");
 
       paddle.Checkout.open({
-        items: [{ priceId: process.env.NEXT_PUBLIC_PADDLE_PRO_PRICE_ID!, quantity: 1 }],
+        items: [{ priceId: PADDLE_PRICE_ID, quantity: 1 }],
         // Passing the email rather than a `ctm_` id is what lets this run without the
         // Paddle API: Paddle matches an existing customer by email, or creates one.
         customer: { email },

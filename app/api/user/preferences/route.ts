@@ -20,9 +20,15 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "No preferences provided" }, { status: 400 });
     }
 
+    // Only a call carrying all three language choices is the onboarding flow finishing.
+    // Setting `onboarded: true` unconditionally meant the reading-language switcher in the
+    // nav (which PATCHes nativeLanguage alone) silently completed onboarding, letting a
+    // user skip the flow entirely.
+    const completesOnboarding = Boolean(body.uiLanguage && body.nativeLanguage && body.targetLanguage);
+
     const user = await db.user.update({
       where: { clerkId: userId },
-      data: { ...body, onboarded: true },
+      data: { ...body, ...(completesOnboarding ? { onboarded: true } : {}) },
     });
 
     return NextResponse.json({ user });

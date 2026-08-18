@@ -1,5 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { db } from "@/lib/db";
 import type { Translations } from "@/types";
 
@@ -57,6 +58,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       where: { id: params.id },
       include: { words: { orderBy: { position: "asc" } } },
     });
+
+    revalidateTag("vocab-groups");
+
     return NextResponse.json({ group });
   } catch (err) {
     console.error("[PATCH /api/vocab-groups/[id]]", err);

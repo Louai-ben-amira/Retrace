@@ -14,15 +14,17 @@ const isPublicRoute = createRouteMatcher([
   // Called by Vercel Cron, which carries no Clerk session — the route authenticates
   // itself with CRON_SECRET.
   "/api/push/send-daily",
+  // Terms and Privacy must be reachable signed-out: Paddle is the merchant of record and
+  // its seller agreement requires them to be publicly accessible.
+  "/legal(.*)",
 ]);
-
-const isAdminRoute = createRouteMatcher(["/admin(.*)", "/api/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
     await auth().protect();
   }
-  // Admin routes: additional check happens inside the route itself
+  // Admin routes carry no matcher here on purpose — every /admin page and /api/admin route
+  // verifies role === "ADMIN" against the database itself, which is the check that matters.
   return NextResponse.next();
 });
 

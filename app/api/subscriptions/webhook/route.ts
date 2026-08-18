@@ -17,7 +17,15 @@ export async function POST(req: NextRequest) {
   const signature = req.headers.get("paddle-signature");
   const secret = process.env.PADDLE_WEBHOOK_SECRET;
 
-  if (!signature || !secret) {
+  // A missing secret is our fault, not the caller's, and the two need different statuses:
+  // 500 tells Paddle to retry (so deliveries survive a deploy that forgot the env var),
+  // while the 400 below tells it the payload itself was bad and not to bother. Collapsing
+  // both into 400 is what made a misconfigured secret look like normal traffic.
+  if (!secret) {
+    console.error("[Paddle webhook] PADDLE_WEBHOOK_SECRET is not set — rejecting delivery");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 500 });
+  }
+  if (!signature) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
@@ -33,18 +41,29 @@ export async function POST(req: NextRequest) {
   // `subscription.created` carries an extra transactionId, so it arrives as its own type.
   // Every field read below is common to both.
   const syncSubscription = async (sub: SubscriptionNotification | SubscriptionCreatedNotification) => {
-    // customData is set when the browser opens checkout. Falling back to the customer id
-    // covers repeat events for a subscription already on file — including ones created by
-    // hand in the Paddle dashboard, which carry no custom data at all.
+    // customData is set when the browser opens checkout, and Paddle carries it onto the
+    // subscription. The customer-id lookup is only good for REPEAT events on a
+    // subscription already on file — it cannot rescue a first delivery, because this
+    // handler is what creates that row in the first place. A subscription created by hand
+    // in the Paddle dashboard therefore has no automatic path to an account and has to be
+    // comped through /api/admin/users/[id]/plan.
     const userId =
       (sub.customData as { userId?: string } | null)?.userId ??
-      (await db.subscription.findUnique({
-        where: { paddleCustomerId: sub.customerId },
-        select: { userId: true },
-      }))?.userId;
+      (
+        await db.subscription.findUnique({
+          where: { paddleCustomerId: sub.customerId },
+          select: { userId: true },
+        })
+      )?.userId;
 
     if (!userId) {
-      console.error("[Paddle webhook] no user for subscription", sub.id, sub.customerId);
+      // Loud and actionable: reaching here means someone may have paid and received
+      // nothing, and the only remedy is a manual grant.
+      console.error(
+        "[Paddle webhook] UNLINKED SUBSCRIPTION — no customData.userId and no stored customer.",
+        { subscriptionId: sub.id, customerId: sub.customerId, status: sub.status },
+        "Grant Pro manually in the admin panel, or this customer is billed with no access."
+      );
       return;
     }
 
@@ -82,20 +101,28 @@ export async function POST(req: NextRequest) {
     });
   };
 
-  switch (event.eventType) {
-    // Every one of these carries the full subscription entity with an up-to-date status,
-    // including `canceled` — so a single sync handles the whole lifecycle rather than
-    // needing a separate delete branch.
-    case EventName.SubscriptionCreated:
-    case EventName.SubscriptionUpdated:
-    case EventName.SubscriptionActivated:
-    case EventName.SubscriptionTrialing:
-    case EventName.SubscriptionPastDue:
-    case EventName.SubscriptionPaused:
-    case EventName.SubscriptionResumed:
-    case EventName.SubscriptionCanceled:
-      await syncSubscription(event.data);
-      break;
+  try {
+    switch (event.eventType) {
+      // Every one of these carries the full subscription entity with an up-to-date status,
+      // including `canceled` — so a single sync handles the whole lifecycle rather than
+      // needing a separate delete branch.
+      case EventName.SubscriptionCreated:
+      case EventName.SubscriptionUpdated:
+      case EventName.SubscriptionActivated:
+      case EventName.SubscriptionTrialing:
+      case EventName.SubscriptionPastDue:
+      case EventName.SubscriptionPaused:
+      case EventName.SubscriptionResumed:
+      case EventName.SubscriptionCanceled:
+        await syncSubscription(event.data);
+        break;
+    }
+  } catch (err) {
+    // paddleCustomerId is @unique, so a customer collision throws here. 500 makes Paddle
+    // retry, and naming the event type means a lost upgrade is traceable rather than an
+    // anonymous unhandled rejection.
+    console.error("[Paddle webhook] sync failed for", event.eventType, err);
+    return NextResponse.json({ error: "Sync failed" }, { status: 500 });
   }
 
   return NextResponse.json({ received: true });

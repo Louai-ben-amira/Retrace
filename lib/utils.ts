@@ -29,9 +29,23 @@ export function difficultyColor(d: string): string {
   }[d] ?? "bg-gray-100 text-gray-800";
 }
 
+/**
+ * Whether an email address is listed in ADMIN_EMAILS.
+ *
+ * Called from both provisioning paths (the Clerk webhook and lib/auth.ts's self-healing
+ * `provisionUser`) so the ADMIN role can be granted by configuration. Before that wiring
+ * existed, nothing in the codebase ever wrote `role: "ADMIN"` and the admin panel was
+ * unreachable on a fresh deploy without direct database access.
+ *
+ * Tolerant of the shapes a comma-separated env var actually arrives in: surrounding
+ * spaces, mixed case, and trailing/empty entries.
+ */
 export function isAdmin(email: string): boolean {
-  const admins = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim());
-  return admins.includes(email);
+  const admins = (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+  return admins.includes(email.toLowerCase());
 }
 
 export function parseVocabTags(json: unknown): VocabTag[] {

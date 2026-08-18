@@ -292,11 +292,11 @@ export default async function LandingPage() {
           <span>Re<span className="text-brand-500">trace</span></span>
         </div>
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-3">
-          <a href="#" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.about}</a>
+          <a href="/legal/about" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.about}</a>
           <a href="#stories" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.stories}</a>
           <a href="#pricing" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.pricing}</a>
-          <a href="#" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.privacy}</a>
-          <a href="#" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.terms}</a>
+          <a href="/legal/privacy" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.privacy}</a>
+          <a href="/legal/terms" className="text-[13px] text-cream/50 hover:text-cream transition-colors">{t.footer.terms}</a>
         </div>
         <div className="text-[13px] text-cream/30">© {new Date().getFullYear()} Retrace</div>
       </footer>

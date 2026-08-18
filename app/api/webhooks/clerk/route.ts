@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { Webhook } from "svix";
 import { db } from "@/lib/db";
+import { isAdmin } from "@/lib/utils";
 
 interface ClerkUserEvent {
   data: {
@@ -41,30 +42,45 @@ export async function POST(req: Request) {
 
   const { data, type } = payload;
 
-  if (type === "user.created" || type === "user.updated") {
-    const primaryEmail = data.email_addresses.find(
-      (e) => e.id === data.primary_email_address_id
-    )?.email_address;
+  try {
+    if (type === "user.created" || type === "user.updated") {
+      const primaryEmail = data.email_addresses.find(
+        (e) => e.id === data.primary_email_address_id
+      )?.email_address;
 
-    if (!primaryEmail) return new Response("No email", { status: 400 });
+      if (!primaryEmail) return new Response("No email", { status: 400 });
 
-    const name = [data.first_name, data.last_name].filter(Boolean).join(" ") || null;
+      const name = [data.first_name, data.last_name].filter(Boolean).join(" ") || null;
 
-    await db.user.upsert({
-      where: { clerkId: data.id },
-      update: { email: primaryEmail, name, image: data.image_url },
-      create: {
-        clerkId: data.id,
-        email: primaryEmail,
-        name,
-        image: data.image_url,
-        streak: { create: {} },
-      },
-    });
-  }
+      // `undefined` rather than "USER" on the update path: Prisma omits undefined keys, so
+      // an address that is not in ADMIN_EMAILS leaves the existing role alone instead of
+      // demoting someone who was promoted by hand.
+      const role = isAdmin(primaryEmail) ? ("ADMIN" as const) : undefined;
 
-  if (type === "user.deleted") {
-    await db.user.deleteMany({ where: { clerkId: data.id } });
+      await db.user.upsert({
+        where: { clerkId: data.id },
+        update: { email: primaryEmail, name, image: data.image_url, role },
+        create: {
+          clerkId: data.id,
+          email: primaryEmail,
+          name,
+          image: data.image_url,
+          role: role ?? "USER",
+          streak: { create: {} },
+        },
+      });
+    }
+
+    if (type === "user.deleted") {
+      await db.user.deleteMany({ where: { clerkId: data.id } });
+    }
+  } catch (err) {
+    // Without this, a database error escaped as an unhandled rejection and Next returned a
+    // bare 500 with nothing naming the event. A 500 is still the right status — svix
+    // retries it — but now the failure is attributable, and lib/auth.ts's provisionUser
+    // covers the user in the meantime.
+    console.error("[Clerk webhook] failed to apply", type, "for", data.id, err);
+    return new Response("Database error", { status: 500 });
   }
 
   return new Response("OK", { status: 200 });
