@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { difficultyLabel } from "@/lib/utils";
 import { getTranslation, isRTL } from "@/lib/languages";
+import { getAppCopy } from "@/lib/i18n/app";
 import type { VocabGroup, Translations } from "@/types";
 
 export interface GroupCardData extends VocabGroup {
@@ -10,7 +11,8 @@ export interface GroupCardData extends VocabGroup {
   isPro: boolean;
 }
 
-export function VocabularyGroupCard({ group, locale = "ar" }: { group: GroupCardData; locale?: string }) {
+export function VocabularyGroupCard({ group, locale = "ar", uiLanguage }: { group: GroupCardData; locale?: string; uiLanguage?: string | null }) {
+  const t = getAppCopy(uiLanguage);
   const draft = !group.isPublished;
   const locked = !draft && group.isPremium && !group.isPro;
   const pct = group.wordCount > 0 ? Math.round((group.learnedCount / group.wordCount) * 100) : 0;
@@ -28,11 +30,11 @@ export function VocabularyGroupCard({ group, locale = "ar" }: { group: GroupCard
       <div className="flex items-start justify-between mb-3">
         <span className={cn("text-3xl", draft && "grayscale")}>{group.emoji}</span>
         {draft ? (
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-400/15 text-amber-300 shrink-0">Coming soon</span>
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-400/15 text-amber-300 shrink-0">{t.vocabulary.comingSoon}</span>
         ) : locked ? (
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-violet-400/15 text-violet-300 shrink-0">Pro</span>
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-violet-400/15 text-violet-300 shrink-0">{t.common.pro}</span>
         ) : (
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-400 shrink-0">Free</span>
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-400 shrink-0">{t.common.free}</span>
         )}
       </div>
 
@@ -42,7 +44,7 @@ export function VocabularyGroupCard({ group, locale = "ar" }: { group: GroupCard
       </p>
 
       <div className="flex items-center justify-between mb-3 mt-auto">
-        <span className="text-xs text-cream/40">{draft ? "— words" : `${group.wordCount} words`}</span>
+        <span className="text-xs text-cream/40">{draft ? "—" : t.vocabulary.wordCount(group.wordCount)}</span>
         <span
           className={cn(
             "text-xs font-semibold px-2 py-0.5 rounded-full",
@@ -51,25 +53,25 @@ export function VocabularyGroupCard({ group, locale = "ar" }: { group: GroupCard
             group.difficulty === "ADVANCED" && "bg-rose-400/15 text-rose-300"
           )}
         >
-          {difficultyLabel(group.difficulty)}
+          {difficultyLabel(group.difficulty, t.common.difficulty)}
         </span>
       </div>
 
       {draft ? (
         <p className="text-xs text-cream/30 flex items-center gap-1.5">
-          <span aria-hidden>🕐</span> Admin is preparing this group.
+          {t.vocabulary.preparingGroup}
         </p>
       ) : locked ? (
-        <p className="text-xs text-violet-300 font-medium">Upgrade to unlock</p>
+        <p className="text-xs text-violet-300 font-medium">{t.vocabulary.upgradeToUnlock}</p>
       ) : hasProgress ? (
         <div>
           <div className="h-[3px] bg-white/[0.07] rounded-full overflow-hidden mb-1.5">
             <div className="h-full bg-brand-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
           </div>
-          <p className="text-xs text-cream/40">{group.learnedCount} / {group.wordCount} learned</p>
+          <p className="text-xs text-cream/40">{t.vocabulary.learnedProgress(group.learnedCount, group.wordCount)}</p>
         </div>
       ) : (
-        <p className="text-xs text-cream/30">Not started</p>
+        <p className="text-xs text-cream/30">{t.vocabulary.notStarted}</p>
       )}
     </div>
   );

@@ -24,13 +24,14 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const user = await db.user.findUnique({ where: { clerkId: userId } });
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
-
     const { lineId, storyId, words } = CollectSchema.parse(await req.json());
     if (words.length === 0) return NextResponse.json({ ok: true, collected: 0 });
 
-    const story = await db.story.findUnique({ where: { id: storyId }, select: { topic: true } });
+    const [user, story] = await Promise.all([
+      db.user.findUnique({ where: { clerkId: userId } }),
+      db.story.findUnique({ where: { id: storyId }, select: { topic: true } }),
+    ]);
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
     await Promise.all(
       words.map((w) =>

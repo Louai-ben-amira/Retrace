@@ -1,6 +1,5 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["relationJoins"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -19,6 +18,7 @@ model User {
   targetLanguage String   @default("en") // what they're learning (always "en" for now)
   onboarded      Boolean  @default(false)
   role           Role     @default(USER)
+  totalXp        Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -29,6 +29,7 @@ model User {
   wordBank          WordBankEntry[]
   vocabWords        VocabWord[]
   groupWordProgress VocabGroupProgress[]
+  pushSubscriptions PushSubscription[]
 }
 
 model Story {
@@ -62,7 +63,9 @@ model Line {
   translations Json     @default("{}") // { "ar": "...", "fr": "...", "es": "...", "tr": "..." }
   audioUrl     String?
   vocabTags    Json?
-  grammarNote  String?
+  // Keyed by locale — { "ar": "...", "fr": "..." }. Was a single String, which could only
+  // ever hold one language and so served Arabic explanations to every user.
+  grammarNotes Json     @default("{}")
   createdAt    DateTime @default(now())
 
   story      Story         @relation(fields: [storyId], references: [id], onDelete: Cascade)
@@ -235,6 +238,7 @@ model VocabGroupWord {
   translations Json     @default("{}") // { "ar": "...", "fr": "...", "es": "...", "tr": "..." }
   example      String
   position     Int      @default(0)
+  audioUrl     String?
   createdAt    DateTime @default(now())
 
   group    VocabGroup           @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -259,6 +263,17 @@ model VocabGroupProgress {
 
   @@unique([userId, wordId])
   @@index([userId, groupId])
+}
+
+model PushSubscription {
+  id           String   @id @default(cuid())
+  userId       String
+  subscription Json
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum Difficulty {

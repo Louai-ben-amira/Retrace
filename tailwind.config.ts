@@ -9,6 +9,11 @@ const config: Config = {
   darkMode: "class",
   theme: {
     extend: {
+      // Tailwind's smallest default breakpoint is sm:640px, which leaves every phone
+      // (360–430px) on the same base styles as a 600px tablet. `xs` splits that range.
+      screens: {
+        xs: "475px",
+      },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         serif: ["var(--font-serif)", "Georgia", "serif"],
@@ -51,8 +56,15 @@ const config: Config = {
         "line-in": "lineIn 0.4s cubic-bezier(0.22,1,0.36,1) both",
         "scale-in": "scaleIn 0.5s cubic-bezier(0.22,1,0.36,1) both",
         flash: "flashError 0.25s ease",
+        "slide-in-right": "slideInRight 0.25s cubic-bezier(0.22,1,0.36,1) both",
+        shake: "shake 0.4s cubic-bezier(0.36,0.07,0.19,0.97) both",
       },
       keyframes: {
+        shake: {
+          "0%, 100%": { transform: "translateX(0)" },
+          "10%, 30%, 50%, 70%, 90%": { transform: "translateX(-6px)" },
+          "20%, 40%, 60%, 80%": { transform: "translateX(6px)" },
+        },
         fadeIn: { from: { opacity: "0" }, to: { opacity: "1" } },
         slideUp: { from: { opacity: "0", transform: "translateY(8px)" }, to: { opacity: "1", transform: "translateY(0)" } },
         pulseSoft: { "0%,100%": { opacity: "1" }, "50%": { opacity: "0.6" } },
@@ -62,6 +74,7 @@ const config: Config = {
         lineIn: { from: { opacity: "0", transform: "translateY(16px)" }, to: { opacity: "1", transform: "translateY(0)" } },
         scaleIn: { from: { opacity: "0", transform: "scale(0.95)" }, to: { opacity: "1", transform: "scale(1)" } },
         flashError: { "0%,100%": { background: "transparent" }, "50%": { background: "rgba(239,68,68,0.08)" } },
+        slideInRight: { from: { opacity: "0", transform: "translateX(24px)" }, to: { opacity: "1", transform: "translateX(0)" } },
       },
     },
   },

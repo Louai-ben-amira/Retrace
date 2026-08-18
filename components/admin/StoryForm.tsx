@@ -103,7 +103,7 @@ export function StoryForm() {
       {/* Story metadata */}
       <div className="bg-ink-surface border border-white/[0.08] rounded-xl p-6 space-y-4">
         <h2 className="font-semibold text-cream mb-2">Story details</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Title (English)" value={story.title ?? ""} onChange={(e) => setStory((s) => ({ ...s, title: e.target.value }))} />
           <Input label="Title (Arabic)" value={story.titleAr ?? ""} onChange={(e) => setStory((s) => ({ ...s, titleAr: e.target.value }))} />
           <Input label="Description (English)" value={story.description ?? ""} onChange={(e) => setStory((s) => ({ ...s, description: e.target.value }))} />
@@ -127,7 +127,7 @@ export function StoryForm() {
           <h2 className="font-semibold text-cream mb-4">Lines ({story.lines.length})</h2>
           <div className="space-y-3">
             {story.lines.map((line, idx) => (
-              <div key={idx} className="grid grid-cols-2 gap-3 p-3 bg-white/[0.03] rounded-lg">
+              <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-white/[0.03] rounded-lg">
                 <div>
                   <label className="text-xs text-cream/40 block mb-1">Line {line.position} — English</label>
                   <textarea

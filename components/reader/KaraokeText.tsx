@@ -4,7 +4,7 @@ import type { VocabTag } from "@/types";
 
 interface KaraokeTextProps {
   text: string;
-  typedIndex: number;
+  typed: string;
   flashIndex: number | null;
   vocabTags?: VocabTag[];
   vocabEnabled?: boolean;
@@ -19,6 +19,10 @@ const CHAR_BASE = "relative whitespace-pre-wrap transition-colors duration-150";
 const CHAR_CLASS_TYPED = cn(CHAR_BASE, "text-cream opacity-100");
 const CHAR_CLASS_UNTYPED = cn(CHAR_BASE, "text-cream opacity-20");
 const CHAR_CLASS_FLASH = cn(CHAR_BASE, "text-red-500 opacity-100");
+// Typing is no longer gated on correctness, so a mistyped character can sit behind the
+// cursor uncorrected until the line is submitted — this keeps it visibly wrong rather
+// than silently rendering as if it matched.
+const CHAR_CLASS_WRONG = cn(CHAR_BASE, "text-red-400 opacity-100 underline decoration-red-400/70 underline-offset-4");
 const WORD_WRAPPER_CLASS = "whitespace-nowrap";
 const TAPPABLE_WORD_CLASS = "whitespace-nowrap cursor-pointer border-b-2 border-dotted border-brand-500/50";
 
@@ -38,7 +42,7 @@ function tokenizeWords(text: string): { word: string; start: number; end: number
 
 export const KaraokeText = memo(function KaraokeText({
   text,
-  typedIndex,
+  typed,
   flashIndex,
   vocabTags = [],
   vocabEnabled = false,
@@ -51,12 +55,21 @@ export const KaraokeText = memo(function KaraokeText({
     return map;
   }, [vocabTags]);
 
+  const typedIndex = typed.length;
+
   const renderChar = (i: number) => {
     const char = text[i];
     const isTyped = i < typedIndex;
     const isCursor = i === typedIndex;
     const isFlashing = i === flashIndex;
-    const className = isFlashing ? CHAR_CLASS_FLASH : isTyped ? CHAR_CLASS_TYPED : CHAR_CLASS_UNTYPED;
+    const matchesTarget = isTyped && typed[i]?.toLowerCase() === char.toLowerCase();
+    const className = isFlashing
+      ? CHAR_CLASS_FLASH
+      : isTyped
+      ? matchesTarget
+        ? CHAR_CLASS_TYPED
+        : CHAR_CLASS_WRONG
+      : CHAR_CLASS_UNTYPED;
     return (
       <span key={i} className={className}>
         {char}
@@ -98,7 +111,10 @@ export const KaraokeText = memo(function KaraokeText({
   }
 
   return (
-    <p className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight tracking-tight text-center text-balance select-none">
+    // Phone sizes are deliberately much smaller than the desktop display size: a full
+    // sentence at text-4xl on a 360px screen runs to seven or eight lines, which breaks
+    // the "read one line at a glance" premise the whole exercise depends on.
+    <p className="font-serif text-2xl xs:text-[28px] sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-snug sm:leading-tight tracking-tight text-center text-balance select-none break-words">
       {nodes}
     </p>
   );

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
+import { getAdminVocabGroupsList } from "@/lib/queries";
 import { Badge } from "@/components/ui/Badge";
 import { difficultyLabel } from "@/lib/utils";
 import { VocabGroupPublishToggle } from "@/components/admin/VocabGroupPublishToggle";
@@ -14,13 +14,7 @@ function asTranslations(value: unknown): Translations {
 }
 
 export default async function AdminVocabularyPage() {
-  const groups = await db.vocabGroup.findMany({
-    include: {
-      _count: { select: { words: true, progress: true } },
-      words: { select: { translations: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const groups = await getAdminVocabGroupsList();
 
   return (
     <div>
@@ -38,7 +32,10 @@ export default async function AdminVocabularyPage() {
       </div>
 
       <div className="bg-ink-surface rounded-xl border border-white/[0.08] overflow-hidden">
-        <table className="w-full text-sm">
+        {/* The table scrolls inside its own card rather than widening the page — the
+            outer `overflow-hidden` alone just clipped the right-hand columns on mobile. */}
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-white/[0.07] bg-white/[0.02]">
               <th className="text-left px-5 py-3 text-xs font-semibold text-cream/40 uppercase tracking-wide">Group</th>
@@ -99,6 +96,7 @@ export default async function AdminVocabularyPage() {
             })}
           </tbody>
         </table>
+        </div>
         {groups.length === 0 && (
           <div className="text-center py-16 text-cream/40">
             <p className="mb-2">No vocabulary groups yet.</p>

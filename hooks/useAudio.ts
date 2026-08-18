@@ -6,11 +6,12 @@ export const AUDIO_SPEEDS = [0.6, 0.85, 1, 1.25] as const;
 export type AudioSpeed = (typeof AUDIO_SPEEDS)[number];
 
 interface UseAudioOptions {
-  lineId: string;
+  id: string;
   text: string;
+  endpointBase?: string;
 }
 
-export function useAudio({ lineId, text }: UseAudioOptions) {
+export function useAudio({ id, text, endpointBase = "/api/audio" }: UseAudioOptions) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,13 +30,13 @@ export function useAudio({ lineId, text }: UseAudioOptions) {
     setIsPlaying(false);
   }, []);
 
-  // Reset playback state whenever we move to a new line.
+  // Reset playback state whenever we move to a new line/word.
   useEffect(() => {
     stop();
     audioRef.current = null;
     setUsingFallback(false);
     setError(null);
-  }, [lineId, stop]);
+  }, [id, stop]);
 
   useEffect(() => stop, [stop]);
 
@@ -75,7 +76,7 @@ export function useAudio({ lineId, text }: UseAudioOptions) {
 
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/audio/${lineId}`);
+      const res = await fetch(`${endpointBase}/${id}`);
       if (!res.ok) throw new Error("tts-unavailable");
       const { url } = (await res.json()) as { url: string };
 
@@ -91,7 +92,7 @@ export function useAudio({ lineId, text }: UseAudioOptions) {
     } finally {
       setIsLoading(false);
     }
-  }, [lineId, usingFallback, playFallback]);
+  }, [id, endpointBase, usingFallback, playFallback]);
 
   const changeSpeed = useCallback((next: AudioSpeed) => {
     setSpeed(next);

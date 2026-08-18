@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { masteryLabel, MASTERY_META } from "@/lib/srs";
 import { getTranslation, isRTL } from "@/lib/languages";
+import { getAppCopy } from "@/lib/i18n/app";
 import { cn } from "@/lib/cn";
 import type { WordBankEntryWithStory, Translations } from "@/types";
 
@@ -9,12 +10,16 @@ export function WordCard({
   word,
   showStory = true,
   nativeLanguage = "ar",
+  uiLanguage,
 }: {
   word: WordBankEntryWithStory;
   showStory?: boolean;
   nativeLanguage?: string;
+  uiLanguage?: string | null;
 }) {
-  const mastery = MASTERY_META[masteryLabel(word.reviewCount, word.interval)];
+  const t = getAppCopy(uiLanguage);
+  const masteryKey = masteryLabel(word.reviewCount, word.interval);
+  const mastery = MASTERY_META[masteryKey];
   const due = word.dueDate <= new Date();
   const translation = getTranslation(word.translations as Translations, nativeLanguage);
 
@@ -31,15 +36,15 @@ export function WordCard({
           </span>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          {due && <span className="w-1.5 h-1.5 rounded-full bg-brand-500" title="Due for review" />}
-          <Badge variant={mastery.badge}>{mastery.label}</Badge>
+          {due && <span className="w-1.5 h-1.5 rounded-full bg-brand-500" title={t.wordbank.dueForReview} />}
+          <Badge variant={mastery.badge}>{t.common.mastery[masteryKey]}</Badge>
         </div>
       </div>
       <p className="text-sm text-cream/40 italic mb-2">{word.example}</p>
       {showStory && (
         <p className="text-xs text-cream/30">
-          from <Link href={`/wordbank/story/${word.storyId}`} className="hover:text-brand-400">{word.story.title}</Link>
-          {word.timesSeen > 1 && ` · seen ${word.timesSeen}×`}
+          {t.wordbank.fromPrefix}<Link href={`/wordbank/story/${word.storyId}`} className="hover:text-brand-400">{word.story.title}</Link>
+          {word.timesSeen > 1 && t.wordbank.seenTimes(word.timesSeen)}
         </p>
       )}
     </div>

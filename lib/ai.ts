@@ -177,12 +177,16 @@ ${lines.map((l) => `${l.position}. EN: "${l.text}"\n   AR: "${l.translation}"`).
 
 // ── Grammar explainer ────────────────────────────────────────────────────
 
-export async function explainGrammar(text: string, translation: string): Promise<string> {
-  const prompt = `You are an English grammar tutor for Arabic-speaking learners.
-Explain, entirely in Arabic, the key grammar point in this English sentence — verb tense, sentence structure, or word order that a learner might find tricky. 2–4 short sentences. Clear and encouraging, not academic.
+export async function explainGrammar(
+  text: string,
+  translation: string,
+  languageName: string
+): Promise<string> {
+  const prompt = `You are an English grammar tutor for ${languageName}-speaking learners.
+Explain, entirely in ${languageName}, the key grammar point in this English sentence — verb tense, sentence structure, or word order that a learner might find tricky. 2–4 short sentences. Clear and encouraging, not academic.
 
 Sentence: "${text}"
-Arabic translation: "${translation}"
+${languageName} translation: "${translation}"
 
 Respond with JSON only, in this exact shape:
 {"explanation": "..."}`;

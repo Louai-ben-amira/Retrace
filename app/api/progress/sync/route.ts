@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { parseVocabTags } from "@/lib/utils";
+import { lineXP } from "@/lib/scoring";
 
 const SyncSchema = z.object({
   storyId: z.string(), lineId: z.string(), attempt: z.string(),
@@ -20,10 +21,13 @@ export async function POST(req: NextRequest) {
     const body = SyncSchema.parse(await req.json());
     const { storyId, lineId, attempt, score, passed, timeMs } = body;
 
-    await db.lineAttempt.create({ data: { userId: user.id, lineId, attempt, score, passed, timeMs } });
-    if (!passed) return NextResponse.json({ ok: true });
-
-    const story = await db.story.findUnique({ where: { id: storyId }, include: { lines: true } });
+    // The line attempt is recorded regardless of outcome — a fuzzy-graded "fail" still
+    // reveals the answer and moves the reader on, so it needs to count toward the
+    // story's average score below just as much as a pass does.
+    const [, story] = await Promise.all([
+      db.lineAttempt.create({ data: { userId: user.id, lineId, attempt, score, passed, timeMs } }),
+      db.story.findUnique({ where: { id: storyId }, include: { lines: true } }),
+    ]);
     if (!story) return NextResponse.json({ error: "Story not found" }, { status: 404 });
 
     const totalLines = story.lines.length;
@@ -31,15 +35,57 @@ export async function POST(req: NextRequest) {
     const position = line?.position ?? 1;
     const isLast = position === totalLines;
 
-    if (line) await collectWordBank(user.id, storyId, story.topic, line.vocabTags);
+    // On the final line, StoryProgress.score is the average across every LineAttempt
+    // made against this story — passes and revealed fails alike. LineAttempt.score is
+    // the raw 0–1 fuzzy match score (see SyncSchema above and the admin analytics page,
+    // which applies the same *100 convention) — scaled to a 0–100 percentage here since
+    // that's what the progress page renders it as.
+    let finalScore: number | undefined;
+    if (isLast) {
+      const attempts = await db.lineAttempt.findMany({
+        where: { userId: user.id, line: { storyId } },
+        select: { score: true },
+      });
+      const avg = attempts.length > 0 ? attempts.reduce((sum, a) => sum + a.score, 0) / attempts.length : score;
+      finalScore = avg * 100;
+    }
 
-    const progress = await db.storyProgress.upsert({
-      where: { userId_storyId: { userId: user.id, storyId } },
-      update: { currentLine: isLast ? position : position + 1, completedLines: { increment: 1 }, completed: isLast, completedAt: isLast ? new Date() : undefined },
-      create: { userId: user.id, storyId, currentLine: isLast ? position : position + 1, completedLines: 1, totalLines, completed: isLast, completedAt: isLast ? new Date() : undefined },
-    });
+    // Progress and streak advance on every submission — that's when the reader actually
+    // moves to the next line, whether it was typed correctly or revealed after a fail.
+    // Word-bank collection stays gated on `passed`: only a correctly typed line means
+    // the vocabulary in it was actually demonstrated.
+    const [, progress, streak] = await Promise.all([
+      passed && line ? collectWordBank(user.id, storyId, story.topic, line.vocabTags) : Promise.resolve(),
+      db.storyProgress.upsert({
+        where: { userId_storyId: { userId: user.id, storyId } },
+        update: {
+          currentLine: isLast ? position : position + 1,
+          completedLines: { increment: 1 },
+          completed: isLast,
+          completedAt: isLast ? new Date() : undefined,
+          score: isLast ? finalScore : undefined,
+        },
+        create: {
+          userId: user.id,
+          storyId,
+          currentLine: isLast ? position : position + 1,
+          completedLines: 1,
+          totalLines,
+          completed: isLast,
+          completedAt: isLast ? new Date() : undefined,
+          score: isLast ? finalScore : undefined,
+        },
+      }),
+      updateStreak(user.id),
+    ]);
 
-    const streak = await updateStreak(user.id);
+    // XP is only earned for lines actually passed — a revealed fail advances the story
+    // but doesn't reward XP.
+    if (passed) {
+      const xp = lineXP(score, timeMs, streak.current);
+      if (xp > 0) await db.user.update({ where: { id: user.id }, data: { totalXp: { increment: xp } } });
+    }
+
     return NextResponse.json({ ok: true, progress, streak: { current: streak.current, longest: streak.longest } });
   } catch (err) {
     if (err instanceof z.ZodError) return NextResponse.json({ error: err.issues }, { status: 400 });

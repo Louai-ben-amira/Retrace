@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/cn";
 import { AUDIO_SPEEDS, type AudioSpeed } from "@/hooks/useAudio";
+import { useTranslation } from "@/lib/i18n/TranslationProvider";
 
 interface AudioPlayerProps {
   isPlaying: boolean;
@@ -13,13 +14,14 @@ interface AudioPlayerProps {
 }
 
 export function AudioPlayer({ isPlaying, isLoading, speed, isPro, onReplay, onSpeedChange }: AudioPlayerProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-4">
       <button
         type="button"
         onClick={onReplay}
         disabled={isLoading}
-        aria-label="Replay line"
+        aria-label={t.reader.replayLine}
         className={cn(
           "inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/10 text-cream/70 hover:text-brand-500 hover:border-brand-500/50 transition-colors disabled:opacity-40",
           isPlaying && "text-brand-500 border-brand-500/50"
@@ -35,7 +37,7 @@ export function AudioPlayer({ isPlaying, isLoading, speed, isPro, onReplay, onSp
         )}
       </button>
 
-      <div className="flex items-center gap-1" title={isPro ? undefined : "Upgrade to Pro for playback speed control"}>
+      <div className="flex items-center gap-1" title={isPro ? undefined : t.reader.upgradeForSpeed}>
         {AUDIO_SPEEDS.map((s) => (
           <button
             key={s}

@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { Reader } from "@/components/reader/Reader";
+import { getAppCopy } from "@/lib/i18n/app";
 import type { Metadata } from "next";
 
 interface StoryPageProps {
@@ -21,7 +22,14 @@ export default async function StoryPage({ params }: StoryPageProps) {
   const [story, user] = await Promise.all([
     db.story.findUnique({
       where: { id: params.id },
-      include: { lines: { orderBy: { position: "asc" } } },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        isPublished: true,
+        isPremium: true,
+        lines: { orderBy: { position: "asc" } },
+      },
     }),
     getCurrentUser(),
   ]);
@@ -33,9 +41,10 @@ export default async function StoryPage({ params }: StoryPageProps) {
   if (story.isPremium && !isPro) redirect("/settings");
 
   if (story.lines.length === 0) {
+    const t = getAppCopy(user?.uiLanguage);
     return (
       <div className="text-center py-24 text-stone-400">
-        <p className="text-lg">This story doesn&apos;t have any lines yet.</p>
+        <p className="text-lg">{t.reader.noLinesYet}</p>
       </div>
     );
   }
@@ -49,6 +58,7 @@ export default async function StoryPage({ params }: StoryPageProps) {
   return (
     <Reader
       storyId={story.id}
+      storySlug={story.slug}
       storyTitle={story.title}
       lines={story.lines}
       startPosition={startPosition}

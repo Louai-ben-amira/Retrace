@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { difficultyLabel } from "@/lib/utils";
 import { VocabularyGroupStudy } from "@/components/vocabulary/VocabularyGroupStudy";
 import { getTranslation, isRTL } from "@/lib/languages";
+import { getAppCopy } from "@/lib/i18n/app";
 import { cn } from "@/lib/cn";
 import type { Translations } from "@/types";
 import type { Metadata } from "next";
@@ -44,14 +45,15 @@ export default async function VocabularyGroupPage({ params }: GroupPageProps) {
   const nativeLanguage = user.nativeLanguage;
   const translatedName = getTranslation(group.titleTranslations as Translations, nativeLanguage);
   const isArabicScript = nativeLanguage === "ar";
+  const t = getAppCopy(user.uiLanguage);
 
   return (
     <div>
-      <Link href="/vocabulary" className="text-sm text-cream/40 hover:text-cream/70">← Vocabulary groups</Link>
+      <Link href="/vocabulary" className="text-sm text-cream/40 hover:text-cream/70">{t.wordbank.backToGroups}</Link>
       <div className="flex items-center gap-3 mt-2 mb-1">
         <span className="text-3xl">{group.emoji}</span>
-        <h1 className="font-serif text-[28px] font-bold tracking-tight text-cream">{group.name}</h1>
-        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-400">{difficultyLabel(group.difficulty)}</span>
+        <h1 className="font-serif text-2xl sm:text-[28px] font-bold tracking-tight text-cream">{group.name}</h1>
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-400">{difficultyLabel(group.difficulty, t.common.difficulty)}</span>
       </div>
       <p className={cn("text-cream/40 mb-6", isArabicScript && "font-arabic")} dir={isRTL(nativeLanguage) ? "rtl" : "ltr"}>
         {translatedName}

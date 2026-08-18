@@ -14,9 +14,16 @@ export async function synthesizeSpeech(text: string): Promise<Buffer> {
     },
     body: JSON.stringify({
       text,
-      model_id: "eleven_multilingual_v2",
+      // Turbo trades a little quality for much lower generation latency — worth it here
+      // since every line/word is synthesized once on first play and then cached; the
+      // multilingual model's extra latency was the dominant cost in that first-play wait,
+      // and all content in this app is English-only anyway.
+      model_id: "eleven_turbo_v2_5",
       voice_settings: { stability: 0.5, similarity_boost: 0.75 },
     }),
+    // Without a cap, a slow or unreachable ElevenLabs leaves the caller hanging with no
+    // feedback — the client only falls back to browser TTS once this call actually rejects.
+    signal: AbortSignal.timeout(6000),
   });
 
   if (!res.ok) {

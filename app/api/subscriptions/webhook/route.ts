@@ -19,14 +19,25 @@ export async function POST(req: NextRequest) {
     const userId = sub.metadata?.userId;
     if (!userId) return;
 
+    // Derived once and used for both branches. The create branch used to hardcode
+    // ACTIVE, which is wrong now that checkout opens a 7-day trial: every genuinely
+    // new subscription arrives with status "trialing".
+    const tier = sub.status === "active" || sub.status === "trialing" ? "PRO" : "FREE";
+    const status =
+      sub.status === "active" ? "ACTIVE"
+      : sub.status === "past_due" ? "PAST_DUE"
+      : sub.status === "trialing" ? "TRIALING"
+      : "CANCELED";
+    const currentPeriodEnd = new Date((sub as any).current_period_end * 1000);
+
     await db.subscription.upsert({
       where: { userId },
       update: {
         stripeSubscriptionId: sub.id,
         stripePriceId: sub.items.data[0]?.price.id,
-        tier: sub.status === "active" || sub.status === "trialing" ? "PRO" : "FREE",
-        status: sub.status === "active" ? "ACTIVE" : sub.status === "past_due" ? "PAST_DUE" : sub.status === "trialing" ? "TRIALING" : "CANCELED",
-        currentPeriodEnd: new Date((sub as any).current_period_end * 1000),
+        tier,
+        status,
+        currentPeriodEnd,
         cancelAtPeriodEnd: sub.cancel_at_period_end,
       },
       create: {
@@ -34,9 +45,10 @@ export async function POST(req: NextRequest) {
         stripeCustomerId: sub.customer as string,
         stripeSubscriptionId: sub.id,
         stripePriceId: sub.items.data[0]?.price.id,
-        tier: "PRO",
-        status: "ACTIVE",
-        currentPeriodEnd: new Date((sub as any).current_period_end * 1000),
+        tier,
+        status,
+        currentPeriodEnd,
+        cancelAtPeriodEnd: sub.cancel_at_period_end,
       },
     });
   };

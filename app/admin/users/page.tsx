@@ -1,57 +1,98 @@
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { formatDate } from "@/lib/utils";
-import { Badge } from "@/components/ui/Badge";
+import { UsersFilterBar } from "@/components/admin/UsersFilterBar";
+import { UsersTable, type UserRow } from "@/components/admin/UsersTable";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Users — Admin" };
 
-export default async function AdminUsersPage() {
-  const users = await db.user.findMany({
-    include: { subscription: true, streak: true, _count: { select: { progress: true } } },
-    orderBy: { createdAt: "desc" },
-    take: 100,
-  });
+interface AdminUsersPageProps {
+  searchParams: { q?: string; plan?: string; streak?: string; sort?: string; dir?: string };
+}
+
+function buildOrderBy(sort: string, dir: "asc" | "desc"): Prisma.UserOrderByWithRelationInput {
+  switch (sort) {
+    case "name": return { name: dir };
+    case "plan": return { subscription: { tier: dir } };
+    case "streak": return { streak: { current: dir } };
+    case "stories": return { progress: { _count: dir } };
+    case "joined":
+    default: return { createdAt: dir };
+  }
+}
+
+export default async function AdminUsersPage({ searchParams }: AdminUsersPageProps) {
+  const q = (searchParams.q ?? "").trim();
+  const plan = searchParams.plan === "PRO" || searchParams.plan === "FREE" ? searchParams.plan : undefined;
+  const streakFilter = searchParams.streak === "active" || searchParams.streak === "none" ? searchParams.streak : undefined;
+  const dir: "asc" | "desc" = searchParams.dir === "asc" ? "asc" : "desc";
+  const sort = searchParams.sort ?? "joined";
+
+  const AND: Prisma.UserWhereInput[] = [];
+  if (q) {
+    AND.push({
+      OR: [
+        { name: { contains: q, mode: "insensitive" } },
+        { email: { contains: q, mode: "insensitive" } },
+      ],
+    });
+  }
+  if (plan === "PRO") AND.push({ subscription: { tier: "PRO" } });
+  if (plan === "FREE") AND.push({ OR: [{ subscription: null }, { subscription: { tier: "FREE" } }] });
+  if (streakFilter === "active") AND.push({ streak: { current: { gt: 0 } } });
+  if (streakFilter === "none") AND.push({ OR: [{ streak: null }, { streak: { current: 0 } }] });
+
+  const where: Prisma.UserWhereInput = AND.length > 0 ? { AND } : {};
+
+  const [users, totalCount] = await Promise.all([
+    db.user.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        subscription: { select: { tier: true } },
+        streak: { select: { current: true } },
+        _count: { select: { progress: true } },
+      },
+      orderBy: buildOrderBy(sort, dir),
+      take: 100,
+    }),
+    db.user.count(),
+  ]);
+
+  const rows: UserRow[] = users.map((u) => ({
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    tier: u.subscription?.tier ?? "FREE",
+    streak: u.streak?.current ?? 0,
+    storiesCount: u._count.progress,
+    joinedAt: u.createdAt.toISOString(),
+  }));
+
+  const isFiltered = q.length > 0 || Boolean(plan) || Boolean(streakFilter);
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="font-serif text-xl font-bold text-cream">Users</h1>
-        <p className="text-sm text-cream/40 mt-0.5">{users.length} total users</p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="font-serif text-xl font-bold text-cream">Users</h1>
+          <p className="text-sm text-cream/40 mt-0.5">
+            {isFiltered ? `${users.length} of ${totalCount} users` : `${totalCount} total users`}
+          </p>
+        </div>
+        <a
+          href="/api/admin/users/export"
+          className="bg-white/[0.06] border border-white/10 text-cream text-sm font-medium px-4 py-2 rounded-lg hover:bg-white/10 transition-colors"
+        >
+          Export CSV
+        </a>
       </div>
 
-      <div className="bg-ink-surface rounded-xl border border-white/[0.08] overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-white/[0.07] bg-white/[0.02]">
-              <th className="text-left px-5 py-3 text-xs font-semibold text-cream/40 uppercase tracking-wide">User</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-cream/40 uppercase tracking-wide">Plan</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-cream/40 uppercase tracking-wide">Streak</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-cream/40 uppercase tracking-wide">Stories</th>
-              <th className="text-left px-5 py-3 text-xs font-semibold text-cream/40 uppercase tracking-wide">Joined</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/[0.06]">
-            {users.map((user) => (
-              <tr key={user.id} className="hover:bg-white/[0.03] transition-colors">
-                <td className="px-5 py-4">
-                  <div className="font-medium text-cream">{user.name ?? "—"}</div>
-                  <div className="text-cream/40 text-xs">{user.email}</div>
-                </td>
-                <td className="px-5 py-4">
-                  <Badge variant={user.subscription?.tier === "PRO" ? "brand" : "stone"}>
-                    {user.subscription?.tier ?? "Free"}
-                  </Badge>
-                </td>
-                <td className="px-5 py-4 text-cream/60">
-                  🔥 {user.streak?.current ?? 0} days
-                </td>
-                <td className="px-5 py-4 text-cream/50">{user._count.progress}</td>
-                <td className="px-5 py-4 text-cream/50">{formatDate(user.createdAt)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <UsersFilterBar />
+      <UsersTable users={rows} />
     </div>
   );
 }

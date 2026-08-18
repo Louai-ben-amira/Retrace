@@ -17,7 +17,13 @@ export async function GET(_: NextRequest, { params }: { params: { lineId: string
       allowOverwrite: true,
     });
 
-    await db.line.update({ where: { id: line.id }, data: { audioUrl: blob.url } });
+    // The client only needs blob.url to start playback — persisting it for future cache
+    // hits doesn't need to hold up the response. Worst case on failure, the next play just
+    // re-synthesizes once more; it's self-healing, not a correctness issue.
+    db.line.update({ where: { id: line.id }, data: { audioUrl: blob.url } }).catch((err) => {
+      console.error(`[GET /api/audio/${params.lineId}] failed to persist audioUrl`, err);
+    });
+
     return NextResponse.json({ url: blob.url });
   } catch (err) {
     console.error(`[GET /api/audio/${params.lineId}]`, err);

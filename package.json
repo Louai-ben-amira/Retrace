@@ -15,8 +15,9 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^5.3.5",
+    "@paddle/paddle-js": "^1.6.4",
+    "@paddle/paddle-node-sdk": "^3.10.0",
     "@prisma/client": "^5.17.0",
-    "@stripe/stripe-js": "^4.3.0",
     "@vercel/blob": "^2.7.0",
     "clsx": "^2.1.1",
     "framer-motion": "^13.1.0",
@@ -24,15 +25,16 @@
     "openai": "^7.4.0",
     "react": "^18",
     "react-dom": "^18",
-    "stripe": "^16.2.0",
     "svix": "^1.99.1",
     "tailwind-merge": "^2.4.0",
+    "web-push": "^3.6.7",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/web-push": "^3.6.4",
     "eslint": "^8",
     "eslint-config-next": "14.2.5",
     "postcss": "^8",

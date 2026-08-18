@@ -17,8 +17,8 @@ export function truncate(str: string, length: number): string {
   return str.length <= length ? str : str.slice(0, length).trimEnd() + "…";
 }
 
-export function difficultyLabel(d: string): string {
-  return { BEGINNER: "Beginner", INTERMEDIATE: "Intermediate", ADVANCED: "Advanced" }[d] ?? d;
+export function difficultyLabel(d: string, labels?: { BEGINNER: string; INTERMEDIATE: string; ADVANCED: string }): string {
+  return (labels ?? { BEGINNER: "Beginner", INTERMEDIATE: "Intermediate", ADVANCED: "Advanced" })[d as "BEGINNER" | "INTERMEDIATE" | "ADVANCED"] ?? d;
 }
 
 export function difficultyColor(d: string): string {

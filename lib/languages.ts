@@ -1,5 +1,6 @@
 export const SUPPORTED_LANGUAGES = [
   { code: "ar", name: "Arabic",     nameNative: "العربية",   rtl: true,  flag: "🇸🇦" },
+  { code: "en", name: "English",    nameNative: "English",   rtl: false, flag: "🇬🇧" },
   { code: "fr", name: "French",     nameNative: "Français",  rtl: false, flag: "🇫🇷" },
   { code: "tr", name: "Turkish",    nameNative: "Türkçe",    rtl: false, flag: "🇹🇷" },
   { code: "es", name: "Spanish",    nameNative: "Español",   rtl: false, flag: "🇪🇸" },

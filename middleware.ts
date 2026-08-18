@@ -8,6 +8,12 @@ const isPublicRoute = createRouteMatcher([
   "/api/webhooks(.*)",
   "/api/subscriptions/webhook",
   "/api/preferences/anon",
+  // The service worker precaches /offline at install time. Behind auth it would cache a
+  // redirect to /login instead of the page, so the offline fallback would never render.
+  "/offline",
+  // Called by Vercel Cron, which carries no Clerk session — the route authenticates
+  // itself with CRON_SECRET.
+  "/api/push/send-daily",
 ]);
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)", "/api/admin(.*)"]);

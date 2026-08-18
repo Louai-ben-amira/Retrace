@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { VOCAB_MASTERY_META } from "@/lib/vocabSrs";
 import { getTranslation, isRTL } from "@/lib/languages";
+import { getAppCopy } from "@/lib/i18n/app";
 import { cn } from "@/lib/cn";
 import type { VocabWordWithStory, VocabWordWithLine, Translations } from "@/types";
 
@@ -9,9 +10,13 @@ interface VocabularyWordCardProps {
   word: VocabWordWithStory | VocabWordWithLine;
   showStory?: boolean;
   nativeLanguage?: string;
+  uiLanguage?: string | null;
 }
 
-export function VocabularyWordCard({ word, showStory = true, nativeLanguage = "ar" }: VocabularyWordCardProps) {
+const LOWER = { MASTERED: "mastered", GOOD: "good", LEARNING: "learning", NEW: "new" } as const;
+
+export function VocabularyWordCard({ word, showStory = true, nativeLanguage = "ar", uiLanguage }: VocabularyWordCardProps) {
+  const t = getAppCopy(uiLanguage);
   const meta = VOCAB_MASTERY_META[word.masteryLevel];
   const due = word.nextReviewAt <= new Date();
   const sentence = "line" in word ? word.line.text : null;
@@ -30,14 +35,14 @@ export function VocabularyWordCard({ word, showStory = true, nativeLanguage = "a
           </span>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          {due && <span className="w-1.5 h-1.5 rounded-full bg-brand-500" title="Due for review" />}
-          <Badge variant={meta.badge}>{meta.label}</Badge>
+          {due && <span className="w-1.5 h-1.5 rounded-full bg-brand-500" title={t.wordbank.dueForReview} />}
+          <Badge variant={meta.badge}>{t.common.mastery[LOWER[word.masteryLevel]]}</Badge>
         </div>
       </div>
       {sentence && <p className="text-sm text-cream/40 italic mb-2">{sentence}</p>}
       {showStory && (
         <p className="text-xs text-cream/30">
-          from <Link href={`/vocabulary/mine/story/${word.storyId}`} className="hover:text-brand-400">{word.story.title}</Link>
+          {t.wordbank.fromPrefix}<Link href={`/vocabulary/mine/story/${word.storyId}`} className="hover:text-brand-400">{word.story.title}</Link>
         </p>
       )}
     </div>

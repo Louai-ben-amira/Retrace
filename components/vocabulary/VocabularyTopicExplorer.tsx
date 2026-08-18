@@ -5,6 +5,8 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 import { VOCAB_MASTERY_META, type MasteryLevel } from "@/lib/vocabSrs";
 import { getTranslation, isRTL } from "@/lib/languages";
+import { useTranslation } from "@/lib/i18n/TranslationProvider";
+import type { AppCopy } from "@/lib/i18n/app";
 import type { Translations } from "@/types";
 
 export interface VocabTopicStat {
@@ -19,21 +21,23 @@ export interface VocabTopicStat {
 
 type View = "grid" | "list" | "flashcard";
 
-const VIEWS: { key: View; label: string }[] = [
-  { key: "grid", label: "Grid" },
-  { key: "list", label: "List" },
-  { key: "flashcard", label: "Flashcard" },
-];
+const LOWER = { MASTERED: "mastered", GOOD: "good", LEARNING: "learning", NEW: "new" } as const;
 
 export function VocabularyTopicExplorer({ topics, nativeLanguage = "ar" }: { topics: VocabTopicStat[]; nativeLanguage?: string }) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [view, setView] = useState<View>("grid");
+  const VIEWS: { key: View; label: string }[] = [
+    { key: "grid", label: t.wordbank.viewGrid },
+    { key: "list", label: t.wordbank.viewList },
+    { key: "flashcard", label: t.wordbank.viewFlashcard },
+  ];
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return topics;
     return topics.filter(
-      (t) => t.label.toLowerCase().includes(q) || getTranslation(t.translations, nativeLanguage).includes(q)
+      (topic) => topic.label.toLowerCase().includes(q) || getTranslation(topic.translations, nativeLanguage).includes(q)
     );
   }, [topics, query, nativeLanguage]);
 
@@ -44,7 +48,7 @@ export function VocabularyTopicExplorer({ topics, nativeLanguage = "ar" }: { top
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search topics…"
+            placeholder={t.wordbank.searchTopics}
             className="w-full text-sm bg-white/5 border border-white/15 rounded-lg pl-9 pr-3 py-2.5 text-cream placeholder:text-cream/25 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
           <span aria-hidden className="absolute left-3 top-1/2 -translate-y-1/2 text-cream/30 text-sm">⌕</span>
@@ -67,21 +71,21 @@ export function VocabularyTopicExplorer({ topics, nativeLanguage = "ar" }: { top
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-sm text-cream/40 py-12 text-center">No topics match &quot;{query}&quot;.</p>
+        <p className="text-sm text-cream/40 py-12 text-center">{t.wordbank.noTopicsMatch(query)}</p>
       ) : view === "list" ? (
         <div className="space-y-2">
-          {filtered.map((t) => <TopicRow key={t.key} topic={t} nativeLanguage={nativeLanguage} />)}
+          {filtered.map((topic) => <TopicRow key={topic.key} topic={topic} nativeLanguage={nativeLanguage} t={t} />)}
         </div>
       ) : (
         <div className={cn("grid gap-4", view === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "sm:grid-cols-2")}>
-          {filtered.map((t) => <TopicCard key={t.key} topic={t} large={view === "flashcard"} nativeLanguage={nativeLanguage} />)}
+          {filtered.map((topic) => <TopicCard key={topic.key} topic={topic} large={view === "flashcard"} nativeLanguage={nativeLanguage} t={t} />)}
         </div>
       )}
     </div>
   );
 }
 
-function TopicCard({ topic, large, nativeLanguage }: { topic: VocabTopicStat; large?: boolean; nativeLanguage: string }) {
+function TopicCard({ topic, large, nativeLanguage, t }: { topic: VocabTopicStat; large?: boolean; nativeLanguage: string; t: AppCopy }) {
   const locked = topic.count === 0;
   const meta = topic.mastery ? VOCAB_MASTERY_META[topic.mastery] : null;
   const translatedLabel = getTranslation(topic.translations, nativeLanguage);
@@ -98,9 +102,9 @@ function TopicCard({ topic, large, nativeLanguage }: { topic: VocabTopicStat; la
       <div className="flex items-start justify-between mb-3">
         <span className={large ? "text-4xl" : "text-2xl"}>{topic.emoji}</span>
         {locked ? (
-          <span className="text-cream/30 text-sm" title="Locked">🔒</span>
+          <span className="text-cream/30 text-sm" title={t.common.locked}>🔒</span>
         ) : (
-          meta && <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full bg-white/5", meta.text)}>{meta.label}</span>
+          meta && <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full bg-white/5", meta.text)}>{t.common.mastery[LOWER[topic.mastery!]]}</span>
         )}
       </div>
       <p className={cn("font-serif font-bold text-cream mb-0.5", large ? "text-2xl" : "text-lg")}>{topic.label}</p>
@@ -108,9 +112,9 @@ function TopicCard({ topic, large, nativeLanguage }: { topic: VocabTopicStat; la
         {translatedLabel}
       </p>
       {locked ? (
-        <p className="text-xs text-cream/30">Read more stories to unlock.</p>
+        <p className="text-xs text-cream/30">{t.wordbank.readMoreToUnlock}</p>
       ) : (
-        <p className="text-xs text-cream/40">{topic.count} word{topic.count === 1 ? "" : "s"}</p>
+        <p className="text-xs text-cream/40">{t.common.words(topic.count)}</p>
       )}
       {!locked && (
         <div className="h-[3px] bg-white/[0.07] rounded-full mt-4 overflow-hidden">
@@ -123,7 +127,7 @@ function TopicCard({ topic, large, nativeLanguage }: { topic: VocabTopicStat; la
   return locked ? inner : <Link href={`/vocabulary/mine/topic/${topic.key}`}>{inner}</Link>;
 }
 
-function TopicRow({ topic, nativeLanguage }: { topic: VocabTopicStat; nativeLanguage: string }) {
+function TopicRow({ topic, nativeLanguage, t }: { topic: VocabTopicStat; nativeLanguage: string; t: AppCopy }) {
   const locked = topic.count === 0;
   const meta = topic.mastery ? VOCAB_MASTERY_META[topic.mastery] : null;
   const translatedLabel = getTranslation(topic.translations, nativeLanguage);
@@ -147,11 +151,11 @@ function TopicRow({ topic, nativeLanguage }: { topic: VocabTopicStat; nativeLang
         </span>
       </div>
       {locked ? (
-        <span className="text-cream/30 text-sm shrink-0" title="Locked">🔒 Locked</span>
+        <span className="text-cream/30 text-sm shrink-0" title={t.common.locked}>🔒 {t.common.locked}</span>
       ) : (
         <>
-          <span className="text-xs text-cream/40 shrink-0">{topic.count} words</span>
-          {meta && <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full bg-white/5 shrink-0", meta.text)}>{meta.label}</span>}
+          <span className="text-xs text-cream/40 shrink-0">{t.common.words(topic.count)}</span>
+          {meta && <span className={cn("text-xs font-semibold px-2 py-0.5 rounded-full bg-white/5 shrink-0", meta.text)}>{t.common.mastery[LOWER[topic.mastery!]]}</span>}
         </>
       )}
     </div>

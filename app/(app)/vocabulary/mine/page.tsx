@@ -10,17 +10,20 @@ import { VocabularyTodayStrip } from "@/components/vocabulary/VocabularyTodayStr
 import { VocabularyMasteryBar } from "@/components/vocabulary/VocabularyMasteryBar";
 import { VocabularyTopicExplorer, type VocabTopicStat } from "@/components/vocabulary/VocabularyTopicExplorer";
 import { VocabularyWordCard } from "@/components/vocabulary/VocabularyWordCard";
+import { getAppCopy, type AppCopy } from "@/lib/i18n/app";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "My words" };
 
 type Filter = "due" | "weak" | "mastered";
 
-const FILTER_META: Record<Filter, { label: string; sub: string }> = {
-  due:      { label: "Due for review", sub: "Words waiting for their next spaced-repetition pass." },
-  weak:     { label: "Weak words",     sub: "Actively being learned, but not solid yet." },
-  mastered: { label: "Mastered",       sub: "Long intervals, well retained." },
-};
+function filterMeta(t: AppCopy): Record<Filter, { label: string; sub: string }> {
+  return {
+    due:      { label: t.wordbank.dueForReview,   sub: t.wordbank.dueForReviewSub },
+    weak:     { label: t.wordbank.weakWords,       sub: t.wordbank.weakWordsSub },
+    mastered: { label: t.wordbank.masteredFilter,  sub: t.wordbank.masteredFilterSub },
+  };
+}
 
 function aggregateMastery(levels: MasteryLevel[]): MasteryLevel {
   const mastered = levels.filter((m) => m === "MASTERED").length;
@@ -36,6 +39,7 @@ export default async function VocabularyPage({ searchParams }: { searchParams: {
 
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  const t = getAppCopy(user.uiLanguage);
 
   const words = await db.vocabWord.findMany({
     where: { userId: user.id },
@@ -47,9 +51,9 @@ export default async function VocabularyPage({ searchParams }: { searchParams: {
     return (
       <div className="text-center py-24 text-cream/40">
         <div className="text-4xl mb-4">📖</div>
-        <p className="text-lg mb-3 text-cream/70">Your vocabulary is empty.</p>
-        <p className="text-sm mb-1">Words are never added manually — every word you type correctly in a story is saved here automatically.</p>
-        <Link href="/library" className="text-brand-400 hover:underline text-sm">Start a story to begin collecting words →</Link>
+        <p className="text-lg mb-3 text-cream/70">{t.wordbank.emptyTitle}</p>
+        <p className="text-sm mb-1">{t.wordbank.emptyBody}</p>
+        <Link href="/library" className="text-brand-400 hover:underline text-sm">{t.wordbank.startCollecting}</Link>
       </div>
     );
   }
@@ -100,54 +104,57 @@ export default async function VocabularyPage({ searchParams }: { searchParams: {
   else if (filter === "weak") filteredWords = words.filter((w) => w.masteryLevel === "LEARNING");
   else if (filter === "mastered") filteredWords = words.filter((w) => w.masteryLevel === "MASTERED");
 
+  const meta = filterMeta(t);
+
   return (
-    <div className="flex gap-8 items-start">
+    <div className="flex flex-col lg:flex-row gap-5 lg:gap-8 items-stretch lg:items-start">
       <VocabularySidebar
         totalCount={words.length}
         dueCount={dueCount}
         weakCount={weakCount}
         masteredCount={masteredCount}
-        topics={topicStats.filter((t) => t.count > 0).map((t) => ({ key: t.key, count: t.count }))}
+        topics={topicStats.filter((ts) => ts.count > 0).map((ts) => ({ key: ts.key, count: ts.count }))}
         recentStories={recentStories}
         activeFilter={filter}
+        uiLanguage={user.uiLanguage}
       />
 
       <div className="flex-1 min-w-0">
-        <Link href="/vocabulary" className="text-sm text-cream/40 hover:text-cream/70">← Vocabulary groups</Link>
+        <Link href="/vocabulary" className="text-sm text-cream/40 hover:text-cream/70">{t.wordbank.backToGroups}</Link>
 
         {filter ? (
           <div className="mb-6 mt-2">
-            <h1 className="font-serif text-[28px] font-bold tracking-tight text-cream">{FILTER_META[filter].label}</h1>
-            <p className="text-cream/50 mt-1">{FILTER_META[filter].sub}</p>
+            <h1 className="font-serif text-2xl sm:text-[28px] font-bold tracking-tight text-cream">{meta[filter].label}</h1>
+            <p className="text-cream/50 mt-1">{meta[filter].sub}</p>
           </div>
         ) : (
           <div className="mb-6 mt-2">
-            <h1 className="font-serif text-[28px] font-bold tracking-tight text-cream">My words</h1>
-            <p className="text-cream/50 mt-1">Every word you&apos;ve typed and learned, collected automatically.</p>
+            <h1 className="font-serif text-2xl sm:text-[28px] font-bold tracking-tight text-cream">{t.wordbank.myWordsTitle}</h1>
+            <p className="text-cream/50 mt-1">{t.wordbank.myWordsSubtitle}</p>
           </div>
         )}
 
         {dueCount > 0 && (
-          <div className="mb-8 rounded-xl border border-brand-500/25 bg-brand-500/10 px-6 py-5 flex items-center justify-between gap-4 flex-wrap">
+          <div className="mb-8 rounded-xl border border-brand-500/25 bg-brand-500/10 px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <div>
-              <p className="text-cream font-semibold">{dueCount} word{dueCount === 1 ? "" : "s"} ready to review</p>
-              <p className="text-sm text-cream/50 mt-0.5">Spaced repetition keeps them fresh in memory.</p>
+              <p className="text-cream font-semibold">{t.wordbank.wordsReadyToReview(dueCount)}</p>
+              <p className="text-sm text-cream/50 mt-0.5">{t.wordbank.spacedRepetitionHint}</p>
             </div>
-            <Link href="/vocabulary/mine/review" className="bg-brand-500 text-ink font-semibold text-sm px-5 py-2.5 rounded-lg hover:bg-brand-300 transition-colors shrink-0">
-              Start review session →
+            <Link href="/vocabulary/mine/review" className="bg-brand-500 text-ink font-semibold text-sm px-5 py-3 rounded-lg hover:bg-brand-300 transition-colors shrink-0 text-center">
+              {t.wordbank.startReviewSession}
             </Link>
           </div>
         )}
 
-        {!filter && <VocabularyTodayStrip words={todayWords} nativeLanguage={user.nativeLanguage} />}
-        {!filter && <VocabularyMasteryBar counts={masteryCounts} total={words.length} />}
+        {!filter && <VocabularyTodayStrip words={todayWords} nativeLanguage={user.nativeLanguage} uiLanguage={user.uiLanguage} />}
+        {!filter && <VocabularyMasteryBar counts={masteryCounts} total={words.length} uiLanguage={user.uiLanguage} />}
 
         {filter ? (
           filteredWords.length === 0 ? (
-            <p className="text-center py-16 text-cream/40 text-sm">No words in this category yet.</p>
+            <p className="text-center py-16 text-cream/40 text-sm">{t.wordbank.noWordsInCategory}</p>
           ) : (
             <div className="grid sm:grid-cols-2 gap-3">
-              {filteredWords.map((w) => <VocabularyWordCard key={w.id} word={w} nativeLanguage={user.nativeLanguage} />)}
+              {filteredWords.map((w) => <VocabularyWordCard key={w.id} word={w} nativeLanguage={user.nativeLanguage} uiLanguage={user.uiLanguage} />)}
             </div>
           )
         ) : (

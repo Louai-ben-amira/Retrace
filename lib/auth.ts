@@ -13,6 +13,5 @@ export const getCurrentUser = cache(async () => {
   return db.user.findUnique({
     where: { clerkId: userId },
     include: { subscription: true, streak: true },
-    relationLoadStrategy: "join",
   });
 });

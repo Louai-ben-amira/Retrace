@@ -102,7 +102,7 @@ export function VocabGroupEditForm({ group }: { group: VocabGroupWithWords }) {
             <VocabGroupPublishToggle groupId={group.id} published={group.isPublished} />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Name (English)" value={name} onChange={(e) => setName(e.target.value)} />
           <Input
             label="Name (Arabic)"
@@ -112,7 +112,7 @@ export function VocabGroupEditForm({ group }: { group: VocabGroupWithWords }) {
             className="font-arabic"
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Emoji" value={emoji} onChange={(e) => setEmoji(e.target.value)} />
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-cream/70">Difficulty</label>
@@ -128,7 +128,7 @@ export function VocabGroupEditForm({ group }: { group: VocabGroupWithWords }) {
 
         <div>
           <p className="text-xs font-semibold text-cream/40 uppercase tracking-wide mb-2">Name translations</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {SUPPORTED_LANGUAGES.map((lang) => (
               <div key={lang.code}>
                 <label className="text-xs text-cream/40 flex items-center gap-1 mb-1">

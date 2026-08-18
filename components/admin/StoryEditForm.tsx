@@ -168,7 +168,7 @@ export function StoryEditForm({ story }: { story: StoryWithLines }) {
 
         <div>
           <p className="text-xs font-semibold text-cream/40 uppercase tracking-wide mb-2">Title translations</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {SUPPORTED_LANGUAGES.map((lang) => (
               <div key={lang.code}>
                 <label className="text-xs text-cream/40 flex items-center gap-1 mb-1">
@@ -190,7 +190,7 @@ export function StoryEditForm({ story }: { story: StoryWithLines }) {
 
         <div>
           <p className="text-xs font-semibold text-cream/40 uppercase tracking-wide mb-2">Description translations</p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {SUPPORTED_LANGUAGES.map((lang) => (
               <div key={lang.code}>
                 <label className="text-xs text-cream/40 flex items-center gap-1 mb-1">

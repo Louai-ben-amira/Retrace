@@ -53,3 +53,16 @@
 
 .animate-in { animation: fadeIn 0.2s ease-out; }
 .animate-up { animation: slideUp 0.3s ease-out; }
+
+/*
+ * Horizontal chip/filter rows on mobile: the row is swipeable, and the visible
+ * scrollbar it would otherwise draw eats vertical space and looks like a seam
+ * between sections on a phone.
+ */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

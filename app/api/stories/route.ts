@@ -10,19 +10,20 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get("page") ?? "1");
     const limit = Math.min(parseInt(searchParams.get("limit") ?? "20"), 50);
 
-    const stories = await db.story.findMany({
-      where: {
-        isPublished: true,
-        ...(difficulty && { difficulty: difficulty as any }),
-        ...(topic && { topic }),
-      },
-      include: { tags: true },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
-
-    const total = await db.story.count({ where: { isPublished: true } });
+    const [stories, total] = await Promise.all([
+      db.story.findMany({
+        where: {
+          isPublished: true,
+          ...(difficulty && { difficulty: difficulty as any }),
+          ...(topic && { topic }),
+        },
+        include: { tags: true },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      db.story.count({ where: { isPublished: true } }),
+    ]);
     return NextResponse.json({ stories, total, page, limit });
   } catch (err) {
     return NextResponse.json({ error: "Internal error" }, { status: 500 });

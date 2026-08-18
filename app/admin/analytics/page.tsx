@@ -1,36 +1,17 @@
-import { db } from "@/lib/db";
+import { getAdminAnalyticsCounts } from "@/lib/queries";
 import { Card } from "@/components/ui/Card";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Analytics — Admin" };
 
 export default async function AdminAnalyticsPage() {
-  const [totalUsers, totalStories, totalAttempts, completedStories] = await Promise.all([
-    db.user.count(),
-    db.story.count({ where: { isPublished: true } }),
-    db.lineAttempt.count(),
-    db.storyProgress.count({ where: { completed: true } }),
-  ]);
-
-  const avgAccuracy = await db.lineAttempt.aggregate({ _avg: { score: true } });
-  const passRate = await db.lineAttempt.groupBy({
-    by: ["passed"],
-    _count: { passed: true },
-  });
+  const { totalUsers, totalStories, totalAttempts, completedStories, avgAccuracy, passRate, topStories, storiesData } =
+    await getAdminAnalyticsCounts();
 
   const passed = passRate.find((r) => r.passed)?._count.passed ?? 0;
   const total = passRate.reduce((s, r) => s + r._count.passed, 0);
   const passPercent = total > 0 ? Math.round((passed / total) * 100) : 0;
 
-  const topStories = await db.storyProgress.groupBy({
-    by: ["storyId"],
-    _count: { storyId: true },
-    orderBy: { _count: { storyId: "desc" } },
-    take: 5,
-  });
-
-  const storyIds = topStories.map((s) => s.storyId);
-  const storiesData = await db.story.findMany({ where: { id: { in: storyIds } } });
   const storyMap = new Map(storiesData.map((s) => [s.id, s]));
 
   const stats = [
@@ -46,7 +27,7 @@ export default async function AdminAnalyticsPage() {
     <div>
       <h1 className="font-serif text-xl font-bold text-cream mb-8">Analytics</h1>
 
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
         {stats.map((stat) => (
           <Card key={stat.label} padding="md" className="hover:border-brand-500/25">
             <p className="text-sm text-cream/40 mb-1">{stat.label}</p>

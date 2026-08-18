@@ -69,11 +69,11 @@ export function VocabGroupForm() {
       {/* Group details */}
       <div className="bg-ink-surface border border-white/[0.08] rounded-xl p-6 space-y-4">
         <h2 className="font-semibold text-cream">Group details</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Input label="Name (English)" value={name} onChange={(e) => setName(e.target.value)} placeholder="Family" />
           <Input label="Name (Arabic)" value={nameAr} onChange={(e) => setNameAr(e.target.value)} placeholder="العائلة" />
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Input label="Emoji" value={emoji} onChange={(e) => setEmoji(e.target.value)} />
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-cream/70">Difficulty</label>

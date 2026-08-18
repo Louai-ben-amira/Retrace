@@ -1,14 +1,17 @@
 import { MASTERY_META, type MasteryLevel } from "@/lib/srs";
+import { getAppCopy } from "@/lib/i18n/app";
 
 interface MasteryBarProps {
   counts: Record<MasteryLevel, number>;
   total: number;
+  uiLanguage?: string | null;
 }
 
 const ORDER: MasteryLevel[] = ["mastered", "good", "learning", "new"];
 
-export function MasteryBar({ counts, total }: MasteryBarProps) {
+export function MasteryBar({ counts, total, uiLanguage }: MasteryBarProps) {
   if (total === 0) return null;
+  const t = getAppCopy(uiLanguage);
 
   return (
     <div className="mb-8">
@@ -23,7 +26,7 @@ export function MasteryBar({ counts, total }: MasteryBarProps) {
         {ORDER.map((level) => (
           <div key={level} className="flex items-center gap-1.5 text-xs text-cream/50">
             <span className={`w-2 h-2 rounded-full ${MASTERY_META[level].dot}`} />
-            {MASTERY_META[level].label} <span className="text-cream/70 font-medium">{counts[level]}</span>
+            {t.common.mastery[level]} <span className="text-cream/70 font-medium">{counts[level]}</span>
           </div>
         ))}
       </div>

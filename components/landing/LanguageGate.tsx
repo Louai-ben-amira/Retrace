@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { SUPPORTED_LANGUAGES, type LanguageCode } from "@/lib/languages";
 import { LanguageCard } from "@/components/ui/LanguageCard";
@@ -52,7 +53,7 @@ export function LanguageGate() {
   const selected = step === 0 ? nativeLanguage : uiLanguage;
 
   return (
-    <div className="grain relative min-h-screen bg-gradient-to-b from-ink via-ink to-ink-raised flex items-center justify-center px-4 py-16 overflow-hidden">
+    <div className="grain relative min-h-[100svh] bg-gradient-to-b from-ink via-ink to-ink-raised flex items-center justify-center px-4 py-10 sm:py-16 overflow-hidden">
       <div
         aria-hidden
         className="absolute w-[700px] h-[700px] rounded-full pointer-events-none -top-52 -left-52 bg-[radial-gradient(circle,rgba(14,207,183,0.12)_0%,transparent_70%)] animate-pulse-glow"
@@ -64,8 +65,9 @@ export function LanguageGate() {
 
       <div className="relative w-full max-w-2xl animate-fade-up">
         <div className="text-center mb-8">
-          <span className="font-serif font-bold text-xl text-cream tracking-tight">
-            Re<span className="text-brand-500">trace</span>
+          <span dir="ltr" className="inline-flex flex-col items-center gap-2 font-serif font-bold text-xl text-cream tracking-tight">
+            <Image src="/logo-icon.png" alt="" width={40} height={40} className="rounded-xl" priority />
+            <span>Re<span className="text-brand-500">trace</span></span>
           </span>
         </div>
 
@@ -81,7 +83,7 @@ export function LanguageGate() {
           ))}
         </div>
 
-        <div key={step} className="rounded-2xl border border-white/[0.08] bg-ink-surface p-8 sm:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_40px_rgba(14,207,183,0.06)] animate-scale-in">
+        <div key={step} className="rounded-2xl border border-white/[0.08] bg-ink-surface p-5 xs:p-8 sm:p-10 shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_40px_rgba(14,207,183,0.06)] animate-scale-in">
           <div className="text-center mb-8">
             <h1 className="font-serif text-2xl sm:text-[28px] font-bold text-cream tracking-tight">{copy.title}</h1>
             <p className="text-cream/50 mt-2 text-sm">{copy.subtitle}</p>
@@ -101,7 +103,7 @@ export function LanguageGate() {
 
           {error && <p className="text-sm text-rose-400 text-center mt-6">{error}</p>}
 
-          <div className="flex items-center justify-between mt-10">
+          <div className="flex items-center justify-between gap-3 mt-8 sm:mt-10">
             <button
               type="button"
               onClick={() => setStep(0)}
@@ -116,7 +118,7 @@ export function LanguageGate() {
                 type="button"
                 onClick={() => setStep(1)}
                 disabled={!nativeLanguage}
-                className="bg-brand-500 text-ink text-sm font-semibold px-6 py-2.5 rounded-lg shadow-[0_0_24px_rgba(14,207,183,0.2)] hover:bg-brand-300 hover:-translate-y-px transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none"
+                className="bg-brand-500 text-ink text-sm font-semibold px-6 py-3 min-h-[44px] rounded-lg shadow-[0_0_24px_rgba(14,207,183,0.2)] hover:bg-brand-300 sm:hover:-translate-y-px transition-all duration-200 disabled:opacity-40 disabled:pointer-events-none"
               >
                 Continue
               </button>
@@ -125,7 +127,7 @@ export function LanguageGate() {
                 type="button"
                 onClick={() => void finish()}
                 disabled={!uiLanguage || saving}
-                className="bg-brand-500 text-ink text-sm font-semibold px-6 py-2.5 rounded-lg shadow-[0_0_24px_rgba(14,207,183,0.2)] hover:bg-brand-300 hover:-translate-y-px transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-2"
+                className="bg-brand-500 text-ink text-sm font-semibold px-6 py-3 min-h-[44px] rounded-lg shadow-[0_0_24px_rgba(14,207,183,0.2)] hover:bg-brand-300 sm:hover:-translate-y-px transition-all duration-200 disabled:opacity-50 disabled:pointer-events-none inline-flex items-center gap-2"
               >
                 {saving && (
                   <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">

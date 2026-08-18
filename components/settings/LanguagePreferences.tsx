@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SUPPORTED_LANGUAGES } from "@/lib/languages";
+import { useTranslation } from "@/lib/i18n/TranslationProvider";
 
 interface LanguagePreferencesProps {
   uiLanguage: string;
@@ -13,6 +14,7 @@ interface LanguagePreferencesProps {
 type FieldKey = "uiLanguage" | "nativeLanguage" | "targetLanguage";
 
 export function LanguagePreferences({ uiLanguage, nativeLanguage, targetLanguage }: LanguagePreferencesProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [values, setValues] = useState({ uiLanguage, nativeLanguage, targetLanguage });
   const [savingField, setSavingField] = useState<FieldKey | null>(null);
@@ -40,11 +42,11 @@ export function LanguagePreferences({ uiLanguage, nativeLanguage, targetLanguage
         body: JSON.stringify({ [field]: value }),
       });
       if (!res.ok) throw new Error("Failed to save");
-      showToast("Preferences saved.");
+      showToast(t.settings.savedToast);
       router.refresh();
     } catch {
       setValues((v) => ({ ...v, [field]: prev }));
-      showToast("Couldn't save that change — try again.", true);
+      showToast(t.settings.errorToast, true);
     } finally {
       setSavingField(null);
     }
@@ -54,23 +56,23 @@ export function LanguagePreferences({ uiLanguage, nativeLanguage, targetLanguage
     <div className="relative">
       <div className="space-y-4">
         <LanguageSelect
-          label="App language"
-          hint="Menus, buttons, and messages"
+          label={t.settings.appLanguage}
+          hint={t.settings.appLanguageHint}
           value={values.uiLanguage}
           onChange={(v) => void save("uiLanguage", v)}
           loading={savingField === "uiLanguage"}
         />
         <LanguageSelect
-          label="My native language"
-          hint="Translations shown while reading"
+          label={t.settings.nativeLanguage}
+          hint={t.settings.nativeLanguageHint}
           value={values.nativeLanguage}
           onChange={(v) => void save("nativeLanguage", v)}
           loading={savingField === "nativeLanguage"}
         />
         <div className="flex items-center justify-between gap-4">
           <div>
-            <label className="text-sm font-medium text-cream/70 block">I&apos;m learning</label>
-            <p className="text-xs text-cream/30 mt-0.5">More languages coming soon</p>
+            <label className="text-sm font-medium text-cream/70 block">{t.settings.learning}</label>
+            <p className="text-xs text-cream/30 mt-0.5">{t.settings.learningHint}</p>
           </div>
           <select
             value={values.targetLanguage}

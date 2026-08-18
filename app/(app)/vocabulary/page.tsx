@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { VocabularyGroupCard, type GroupCardData } from "@/components/vocabulary/VocabularyGroupCard";
+import { getAppCopy } from "@/lib/i18n/app";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Vocabulary groups" };
@@ -37,23 +38,24 @@ export default async function VocabularyGroupsPage({ searchParams }: { searchPar
     learnedCount: learnedMap.get(g.id) ?? 0,
     isPro,
   }));
+  const t = getAppCopy(user.uiLanguage);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h1 className="font-serif text-[28px] font-bold tracking-tight text-cream">Vocabulary groups</h1>
-        <a href="/vocabulary/mine" className="text-sm text-brand-400 hover:text-brand-300 hover:underline">My words →</a>
+        <h1 className="font-serif text-2xl sm:text-[28px] font-bold tracking-tight text-cream">{t.vocabulary.pageTitle}</h1>
+        <a href="/vocabulary/mine" className="text-sm text-brand-400 hover:text-brand-300 hover:underline">{t.vocabulary.myWords}</a>
       </div>
-      <p className="text-cream/50 mb-8">Curated word lists by topic — study them, then find them in real stories.</p>
+      <p className="text-cream/50 mb-8">{t.vocabulary.pageSubtitle}</p>
 
       <div className="flex flex-wrap gap-2 mb-9">
-        <FilterChip href="/vocabulary" active={!searchParams.difficulty} label="All levels" />
+        <FilterChip href="/vocabulary" active={!searchParams.difficulty} label={t.library.allLevels} />
         {DIFFICULTIES.map((d) => (
           <FilterChip
             key={d}
             href={`/vocabulary?difficulty=${d}`}
             active={searchParams.difficulty === d}
-            label={d.charAt(0) + d.slice(1).toLowerCase()}
+            label={t.common.difficulty[d]}
           />
         ))}
       </div>
@@ -61,12 +63,12 @@ export default async function VocabularyGroupsPage({ searchParams }: { searchPar
       {cards.length === 0 ? (
         <div className="text-center py-24 text-cream/40">
           <div className="text-4xl mb-4">📖</div>
-          <p className="text-base font-medium text-cream/60 mb-2">No groups at this level yet</p>
-          <p className="text-sm">More coming soon — try another level for now.</p>
+          <p className="text-base font-medium text-cream/60 mb-2">{t.library.emptyTitle}</p>
+          <p className="text-sm">{t.library.emptySubtitle}</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {cards.map((group) => <VocabularyGroupCard key={group.id} group={group} locale={user.nativeLanguage} />)}
+          {cards.map((group) => <VocabularyGroupCard key={group.id} group={group} locale={user.nativeLanguage} uiLanguage={user.uiLanguage} />)}
         </div>
       )}
     </div>

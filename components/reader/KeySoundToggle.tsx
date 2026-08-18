@@ -1,18 +1,21 @@
 "use client";
 
+import { useTranslation } from "@/lib/i18n/TranslationProvider";
+
 interface KeySoundToggleProps {
   muted: boolean;
   onToggle: () => void;
 }
 
 export function KeySoundToggle({ muted, onToggle }: KeySoundToggleProps) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
       onClick={onToggle}
-      aria-label={muted ? "Unmute keyboard sound" : "Mute keyboard sound"}
+      aria-label={muted ? t.reader.unmuteKeySound : t.reader.muteKeySound}
       aria-pressed={muted}
-      title={muted ? "Keyboard sound muted" : "Keyboard sound on"}
+      title={muted ? t.reader.keySoundMuted : t.reader.keySoundOn}
       className="text-cream/30 hover:text-cream/70 transition-colors"
     >
       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

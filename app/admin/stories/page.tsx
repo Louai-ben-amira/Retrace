@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { db } from "@/lib/db";
+import { getAdminStoriesList } from "@/lib/queries";
 import { Badge } from "@/components/ui/Badge";
 import { difficultyLabel } from "@/lib/utils";
 import { PublishToggle } from "@/components/admin/PublishToggle";
@@ -14,13 +14,7 @@ function asTranslations(value: unknown): Translations {
 }
 
 export default async function AdminStoriesPage() {
-  const stories = await db.story.findMany({
-    include: {
-      _count: { select: { lines: true, progress: true } },
-      lines: { select: { translations: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const stories = await getAdminStoriesList();
 
   return (
     <div>
@@ -38,7 +32,10 @@ export default async function AdminStoriesPage() {
       </div>
 
       <div className="bg-ink-surface rounded-xl border border-white/[0.08] overflow-hidden">
-        <table className="w-full text-sm">
+        {/* The table scrolls inside its own card rather than widening the page — the
+            outer `overflow-hidden` alone just clipped the right-hand columns on mobile. */}
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-white/[0.07] bg-white/[0.02]">
               <th className="text-left px-5 py-3 text-xs font-semibold text-cream/40 uppercase tracking-wide">Title</th>
@@ -97,6 +94,7 @@ export default async function AdminStoriesPage() {
             })}
           </tbody>
         </table>
+        </div>
         {stories.length === 0 && (
           <div className="text-center py-16 text-cream/40">
             <p className="mb-2">No stories yet.</p>

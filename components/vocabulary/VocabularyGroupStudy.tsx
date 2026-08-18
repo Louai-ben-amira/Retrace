@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { getTranslation, isRTL } from "@/lib/languages";
+import { useTranslation } from "@/lib/i18n/TranslationProvider";
+import { useAudio } from "@/hooks/useAudio";
 import type { VocabGroupWord, Translations } from "@/types";
 
 interface StudyWord extends VocabGroupWord {
@@ -16,6 +18,7 @@ interface VocabularyGroupStudyProps {
 }
 
 export function VocabularyGroupStudy({ groupId, words: initialWords, nativeLanguage = "ar" }: VocabularyGroupStudyProps) {
+  const { t } = useTranslation();
   const [words, setWords] = useState(initialWords);
   const [flipped, setFlipped] = useState<Set<string>>(new Set());
   const [pending, setPending] = useState<Set<string>>(new Set());
@@ -60,7 +63,7 @@ export function VocabularyGroupStudy({ groupId, words: initialWords, nativeLangu
         <div className="h-2 w-full rounded-full overflow-hidden bg-white/[0.06] mb-2">
           <div className="h-full bg-brand-500 rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
         </div>
-        <p className="text-sm text-cream/50">{learnedCount} / {words.length} learned</p>
+        <p className="text-sm text-cream/50">{t.vocabulary.learnedProgress(learnedCount, words.length)}</p>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -70,10 +73,11 @@ export function VocabularyGroupStudy({ groupId, words: initialWords, nativeLangu
             <div
               key={word.id}
               className={cn(
-                "bg-ink-surface border rounded-xl overflow-hidden transition-colors duration-200",
+                "relative bg-ink-surface border rounded-xl overflow-hidden transition-colors duration-200",
                 word.learned ? "border-brand-500/30" : "border-white/[0.08]"
               )}
             >
+              <WordAudioButton wordId={word.id} text={word.word} />
               <button
                 type="button"
                 onClick={() => toggleFlip(word.id)}
@@ -103,12 +107,51 @@ export function VocabularyGroupStudy({ groupId, words: initialWords, nativeLangu
                     : "border-white/[0.07] text-cream/40 hover:text-cream hover:bg-white/[0.04]"
                 )}
               >
-                {word.learned ? "✓ Learned" : "Mark as learned"}
+                {word.learned ? t.vocabulary.learned : t.vocabulary.markAsLearned}
               </button>
             </div>
           );
         })}
       </div>
     </div>
+  );
+}
+
+function WordAudioButton({ wordId, text }: { wordId: string; text: string }) {
+  const { t } = useTranslation();
+  const { play, isPlaying, isLoading } = useAudio({ id: wordId, text, endpointBase: "/api/audio/word" });
+
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        void play();
+      }}
+      disabled={isLoading}
+      aria-label={t.vocabulary.playPronunciation}
+      className={cn(
+        "absolute top-2.5 right-2.5 z-10 inline-flex items-center justify-center w-8 h-8 rounded-full border border-white/10 bg-ink-surface/80 text-cream/50 hover:text-brand-500 hover:border-brand-500/50 transition-colors disabled:opacity-40",
+        isPlaying && "text-brand-500 border-brand-500/50"
+      )}
+    >
+      {isLoading ? (
+        <svg className="animate-spin h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+        </svg>
+      ) : (
+        <SpeakerIcon />
+      )}
+    </button>
+  );
+}
+
+function SpeakerIcon() {
+  return (
+    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5 6 9H3v6h3l5 4V5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.5 8.5a5 5 0 010 7M18 6a9 9 0 010 12" />
+    </svg>
   );
 }

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
-import { difficultyColor, difficultyLabel, truncate } from "@/lib/utils";
+import { difficultyLabel, truncate } from "@/lib/utils";
 import { getTranslation, isRTL } from "@/lib/languages";
+import { getAppCopy } from "@/lib/i18n/app";
 import type { Story, StoryProgress, Translations } from "@/types";
 import { cn } from "@/lib/cn";
 
@@ -10,17 +11,23 @@ interface StoryCardProps {
   progress?: StoryProgress | null;
   locked?: boolean;
   locale?: string;
+  uiLanguage?: string | null;
 }
 
 const dotColor = { started: "bg-white/20", progress: "bg-brand-500", done: "bg-emerald-400" };
 
-export function StoryCard({ story, progress, locked, locale = "ar" }: StoryCardProps) {
+export function StoryCard({ story, progress, locked, locale = "ar", uiLanguage }: StoryCardProps) {
+  const t = getAppCopy(uiLanguage);
   const pct = progress
     ? Math.round((progress.completedLines / progress.totalLines) * 100)
     : 0;
   const isCompleted = progress?.completed ?? false;
+  // Completion is a fact, not a ratio — once a story is marked done, the bar should always
+  // read as fully finished even if completedLines/totalLines has drifted slightly (e.g. the
+  // story's line count changed after someone started it).
+  const displayPct = isCompleted ? 100 : pct;
   const status = isCompleted ? "done" : progress && pct > 0 ? "progress" : "started";
-  const statusLabel = isCompleted ? "Completed" : progress && pct > 0 ? "In progress" : "Not started";
+  const statusLabel = isCompleted ? t.library.completed : progress && pct > 0 ? t.library.inProgress : t.library.notStarted;
   const translatedTitle = getTranslation(story.titleTranslations as Translations, locale);
   const isArabicScript = locale === "ar";
 
@@ -39,11 +46,11 @@ export function StoryCard({ story, progress, locked, locale = "ar" }: StoryCardP
           </h3>
           <div className="flex flex-col items-end gap-1.5 shrink-0 mt-0.5">
             <Badge variant={story.difficulty === "BEGINNER" ? "brand" : story.difficulty === "INTERMEDIATE" ? "amber" : "rose"}>
-              {difficultyLabel(story.difficulty)}
+              {difficultyLabel(story.difficulty, t.common.difficulty)}
             </Badge>
             {locked && (
               <span className="text-xs text-cream/40 flex items-center gap-1">
-                <LockIcon /> Pro
+                <LockIcon /> {t.common.pro}
               </span>
             )}
           </div>
@@ -72,14 +79,17 @@ export function StoryCard({ story, progress, locked, locale = "ar" }: StoryCardP
           <span className={cn("w-2 h-2 rounded-full", dotColor[status])} />
           <span className="text-[13px] text-cream/40">{statusLabel}</span>
         </div>
-        <span className="text-[13px] text-cream/40">{story.wordCount} words</span>
+        <span className="text-[13px] text-cream/40">{t.common.words(story.wordCount)}</span>
       </div>
 
       {(progress || isCompleted) && (
         <div className="h-[3px] bg-white/[0.07] mx-5 mb-4 rounded-full overflow-hidden">
           <div
-            className={cn("h-full rounded-full transition-all duration-500", isCompleted ? "bg-brand-400" : "bg-brand-500")}
-            style={{ width: `${pct}%` }}
+            className={cn(
+              "h-full rounded-full transition-all duration-500",
+              isCompleted ? "bg-brand-400 shadow-[0_0_8px_rgba(53,214,190,0.6)]" : "bg-brand-500"
+            )}
+            style={{ width: `${displayPct}%` }}
           />
         </div>
       )}

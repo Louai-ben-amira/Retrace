@@ -1,0 +1,52 @@
+import type { Appearance } from "@clerk/types";
+
+// Themes Clerk's auth widgets (SignIn/SignUp/UserButton) to match the app's
+// dark ink/brand-teal/cream design system instead of Clerk's default light UI.
+export const clerkAppearance: Appearance = {
+  variables: {
+    colorPrimary: "#0ECFB7",
+    colorBackground: "#0D1018",
+    colorInputBackground: "rgba(255,255,255,0.05)",
+    colorInputText: "#EAE6DF",
+    colorText: "#EAE6DF",
+    colorTextSecondary: "rgba(234,230,223,0.55)",
+    colorTextOnPrimaryBackground: "#07090F",
+    colorDanger: "#fb7185",
+    colorSuccess: "#0ECFB7",
+    colorNeutral: "#EAE6DF",
+    borderRadius: "0.75rem",
+    fontFamily: "var(--font-sans)",
+  },
+  elements: {
+    card: "bg-transparent shadow-none border-0 w-full",
+    header: "hidden",
+    socialButtonsBlockButton: "border border-white/10 bg-white/5 hover:bg-white/10 text-cream transition-colors",
+    socialButtonsBlockButtonText: "text-cream font-medium",
+    dividerLine: "bg-white/10",
+    dividerText: "text-cream/40",
+    formFieldLabel: "text-cream/70",
+    formFieldInput: "bg-white/5 border-white/15 text-cream focus:border-brand-500 focus:ring-brand-500/30",
+    formFieldInputShowPasswordButton: "text-cream/40 hover:text-cream",
+    formFieldHintText: "text-cream/40",
+    formFieldSuccessText: "text-brand-400",
+    formFieldErrorText: "text-rose-400",
+    formButtonPrimary: "bg-brand-500 text-ink hover:bg-brand-300 shadow-[0_0_24px_rgba(14,207,183,0.2)] transition-all normal-case",
+    footer: "bg-transparent",
+    footerAction: "text-cream/50",
+    footerActionText: "text-cream/50",
+    footerActionLink: "text-brand-400 hover:text-brand-300",
+    identityPreview: "bg-white/5 border border-white/10",
+    identityPreviewText: "text-cream",
+    identityPreviewEditButton: "text-brand-400 hover:text-brand-300",
+    otpCodeFieldInput: "bg-white/5 border-white/15 text-cream",
+    formResendCodeLink: "text-brand-400 hover:text-brand-300",
+    alternativeMethodsBlockButton: "text-cream/60 border-white/10 hover:bg-white/5",
+    badge: "bg-brand-500/15 text-brand-400",
+    // UserButton popover (nav avatar menu)
+    userButtonPopoverCard: "bg-ink-surface border border-white/10 shadow-2xl",
+    userButtonPopoverActionButton: "text-cream/70 hover:bg-white/5 hover:text-cream",
+    userButtonPopoverActionButtonText: "text-cream/70",
+    userButtonPopoverActionButtonIcon: "text-cream/40",
+    userButtonPopoverFooter: "hidden",
+  },
+};

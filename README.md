@@ -6,7 +6,7 @@ Learn English through stories — built for Arabic speakers.
 - **Next.js 14** (App Router)
 - **Clerk** — authentication
 - **Prisma + PostgreSQL** — database
-- **OpenAI API** — AI story generation & vocab tagging
+- **OpenAI API** — AI story generation, vocab tagging, grammar explanations
 - **Stripe** — subscriptions
 - **ElevenLabs** — TTS audio
 - **Tailwind CSS** — styling
@@ -30,6 +30,10 @@ Copy `.env.local` and fill in your keys:
 | `OPENAI_API_KEY` | platform.openai.com |
 | `ELEVENLABS_API_KEY` | elevenlabs.io |
 | `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET` + `STRIPE_PRO_PRICE_ID` | dashboard.stripe.com |
+| `BLOB_READ_WRITE_TOKEN` | Vercel → Storage → Blob |
+| `VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` + `VAPID_EMAIL` + `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | `npx web-push generate-vapid-keys` |
+| `CRON_SECRET` | Any long random string — authenticates the daily push cron |
+| `NEXT_PUBLIC_APP_URL` | Your public origin, e.g. `https://retrace.app` |
 
 ### 3. Set up database
 ```bash
@@ -78,7 +82,7 @@ components/
 
 lib/
   db.ts           → Prisma singleton
-  ai.ts           → Anthropic client (story gen + vocab tagging)
+  ai.ts           → OpenAI client (story gen, vocab tagging, grammar, translation)
   fuzzy.ts        → Typing match algorithm
   scoring.ts      → XP + score calculation
   utils.ts        → Helpers
@@ -90,14 +94,20 @@ prisma/
 
 ---
 
-## Phase 2 (next): Core learning loop
+## Deploying
 
-The story reader, typing exercise, audio playback, and streak tracking live in Phase 2.
-Files to build:
-- `app/(app)/story/[id]/page.tsx` — reader UI
-- `components/reader/LineReader.tsx` — line display + translation toggle
-- `components/reader/LineInput.tsx` — typing exercise
-- `components/audio/AudioPlayer.tsx` — ElevenLabs playback
-- `hooks/useReader.ts` — state machine
-- `hooks/useAudio.ts` — audio management
-- `app/api/audio/[lineId]/route.ts` — TTS generation + cache
+### Daily "word of the day" push
+`vercel.json` schedules `GET /api/push/send-daily` at 09:00 UTC. The route accepts either
+`Authorization: Bearer $CRON_SECRET` (how Vercel Cron calls it) or a signed-in admin
+session (manual trigger). **Set `CRON_SECRET` in your Vercel project env or the cron will
+be rejected with 401.**
+
+### Offline mode
+`public/sw.js` caches the app shell, Next build assets and synthesised audio, and serves
+`/offline` when a navigation fails with nothing cached. Bump `VERSION` in that file when
+you change caching behaviour — old caches are dropped on activate.
+
+### Database
+`Line.grammarNotes` is a JSON map keyed by locale. If you are upgrading from the older
+`grammarNote String?` column, run `npm run db:push` — existing notes are not migrated and
+will simply be regenerated per language on first request.

@@ -142,7 +142,7 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
         ["Beginner", "Intermediate", "Advanced"]
       ),
     },
-    stats: ["Active learners", "Lines typed", "7-day retention", "Faster recall vs flashcards"],
+    stats: ["Languages supported", "Difficulty levels", "Topics covered", "Ads, ever"],
     pricing: {
       eyebrow: "Plans",
       line1: "Start free.",
@@ -159,7 +159,7 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
         name: "Pro",
         priceSuffix: "per month · cancel anytime",
         features: [
-          "Full story library (50+ stories)",
+          "The complete story library",
           "Native-language translation toggle",
           "WPM & accuracy tracking",
           "Day streak",
@@ -224,7 +224,7 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
         ["مبتدئ", "متوسط", "متقدم"]
       ),
     },
-    stats: ["متعلمون نشطون", "أسطر مكتوبة", "نسبة البقاء بعد 7 أيام", "استرجاع أسرع من البطاقات التعليمية"],
+    stats: ["لغات مدعومة", "مستويات الصعوبة", "مواضيع متاحة", "إعلانات، أبدًا"],
     pricing: {
       eyebrow: "الخطط",
       line1: "ابدأ مجانًا.",
@@ -241,7 +241,7 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
         name: "Pro",
         priceSuffix: "شهريًا · ألغِ في أي وقت",
         features: [
-          "مكتبة قصص كاملة (+50 قصة)",
+          "مكتبة القصص كاملة",
           "خيار الترجمة بلغتك الأم",
           "تتبّع سرعة الكتابة والدقة",
           "سلسلة أيام متتالية",
@@ -306,7 +306,7 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
         ["Débutant", "Intermédiaire", "Avancé"]
       ),
     },
-    stats: ["Apprenants actifs", "Lignes tapées", "Rétention à 7 jours", "Mémorisation plus rapide que les flashcards"],
+    stats: ["Langues prises en charge", "Niveaux de difficulté", "Thèmes couverts", "Publicités, jamais"],
     pricing: {
       eyebrow: "Offres",
       line1: "Commencez gratuitement.",
@@ -323,7 +323,7 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
         name: "Pro",
         priceSuffix: "par mois · annulez à tout moment",
         features: [
-          "Bibliothèque complète (50+ histoires)",
+          "La bibliothèque complète",
           "Traduction dans votre langue maternelle",
           "Suivi de la vitesse et de la précision",
           "Série de jours",
@@ -388,7 +388,7 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
         ["Başlangıç", "Orta", "İleri"]
       ),
     },
-    stats: ["Aktif öğrenci", "Yazılan satır", "7 günlük elde tutma", "Kartlara göre daha hızlı hatırlama"],
+    stats: ["Desteklenen dil", "Zorluk seviyesi", "Konu başlığı", "Reklam, asla"],
     pricing: {
       eyebrow: "Planlar",
       line1: "Ücretsiz başla.",
@@ -405,7 +405,7 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
         name: "Pro",
         priceSuffix: "aylık · istediğin zaman iptal et",
         features: [
-          "Tam hikâye kütüphanesi (50+ hikâye)",
+          "Eksiksiz hikâye kütüphanesi",
           "Ana dilinde çeviri seçeneği",
           "Hız ve doğruluk takibi",
           "Günlük seri",
@@ -470,7 +470,7 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
         ["Principiante", "Intermedio", "Avanzado"]
       ),
     },
-    stats: ["Estudiantes activos", "Líneas escritas", "Retención a 7 días", "Recuerdo más rápido que las tarjetas"],
+    stats: ["Idiomas admitidos", "Niveles de dificultad", "Temas cubiertos", "Anuncios, nunca"],
     pricing: {
       eyebrow: "Planes",
       line1: "Empieza gratis.",
@@ -487,7 +487,7 @@ export const LANDING_COPY: Record<LandingLangCode, LandingCopy> = {
         name: "Pro",
         priceSuffix: "al mes · cancela cuando quieras",
         features: [
-          "Biblioteca completa (más de 50 historias)",
+          "La biblioteca completa",
           "Traducción en tu idioma nativo",
           "Seguimiento de velocidad y precisión",
           "Racha de días",
