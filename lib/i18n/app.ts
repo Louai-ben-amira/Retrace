@@ -56,6 +56,11 @@ export interface AppCopy {
     checkoutError: string;
     savedToast: string;
     errorToast: string;
+    installTitle: string;
+    installCopy: string;
+    installCta: string;
+    installIosSteps: string;
+    installedNote: string;
   };
   library: {
     title: string;
@@ -256,6 +261,11 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       checkoutError: "تعذّر فتح صفحة الدفع. يُرجى المحاولة مرة أخرى.",
       savedToast: "تم حفظ التفضيلات.",
       errorToast: "تعذر حفظ التغيير — حاول مرة أخرى.",
+      installTitle: "تثبيت التطبيق",
+      installCopy: "أضف Retrace إلى شاشتك الرئيسية لوصول أسرع وقراءة دون اتصال.",
+      installCta: "تثبيت",
+      installIosSteps: "اضغط على زر المشاركة، ثم اختر «إضافة إلى الشاشة الرئيسية».",
+      installedNote: "Retrace مثبَّت على هذا الجهاز.",
     },
     library: {
       title: "مكتبة القصص",
@@ -454,6 +464,11 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       checkoutError: "Impossible d'ouvrir le paiement. Veuillez réessayer.",
       savedToast: "Préférences enregistrées.",
       errorToast: "Impossible d'enregistrer — réessayez.",
+      installTitle: "Installer l'application",
+      installCopy: "Ajoutez Retrace à votre écran d'accueil pour un accès plus rapide et une lecture hors ligne.",
+      installCta: "Installer",
+      installIosSteps: "Appuyez sur le bouton Partager, puis choisissez « Sur l'écran d'accueil ».",
+      installedNote: "Retrace est installé sur cet appareil.",
     },
     library: {
       title: "Bibliothèque d'histoires",
@@ -652,6 +667,11 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       checkoutError: "Ödeme ekranı açılamadı. Lütfen tekrar deneyin.",
       savedToast: "Tercihler kaydedildi.",
       errorToast: "Kaydedilemedi — tekrar deneyin.",
+      installTitle: "Uygulamayı yükle",
+      installCopy: "Daha hızlı erişim ve çevrimdışı okuma için Retrace'i ana ekranınıza ekleyin.",
+      installCta: "Yükle",
+      installIosSteps: "Paylaş düğmesine dokunun, ardından «Ana Ekrana Ekle» seçeneğini seçin.",
+      installedNote: "Retrace bu cihaza yüklendi.",
     },
     library: {
       title: "Hikaye kütüphanesi",
@@ -850,6 +870,11 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       checkoutError: "No se pudo abrir el pago. Inténtalo de nuevo.",
       savedToast: "Preferencias guardadas.",
       errorToast: "No se pudo guardar — inténtalo de nuevo.",
+      installTitle: "Instalar la aplicación",
+      installCopy: "Añade Retrace a tu pantalla de inicio para un acceso más rápido y lectura sin conexión.",
+      installCta: "Instalar",
+      installIosSteps: "Toca el botón Compartir y elige «Añadir a pantalla de inicio».",
+      installedNote: "Retrace está instalado en este dispositivo.",
     },
     library: {
       title: "Biblioteca de historias",
@@ -1048,6 +1073,11 @@ export const APP_COPY: Record<LanguageCode, AppCopy> = {
       checkoutError: "Couldn't open checkout. Please try again.",
       savedToast: "Preferences saved.",
       errorToast: "Couldn't save — try again.",
+      installTitle: "Install the app",
+      installCopy: "Add Retrace to your home screen for faster access and offline reading.",
+      installCta: "Install",
+      installIosSteps: "Tap the Share button, then choose \"Add to Home Screen\".",
+      installedNote: "Retrace is installed on this device.",
     },
     library: {
       title: "Story Library",

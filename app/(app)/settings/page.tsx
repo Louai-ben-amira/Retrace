@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
 import { LanguagePreferences } from "@/components/settings/LanguagePreferences";
 import { UpgradeButton } from "@/components/settings/UpgradeButton";
+import { InstallAppButton } from "@/components/settings/InstallAppButton";
 import { getAppCopy } from "@/lib/i18n/app";
 import type { Metadata } from "next";
 
@@ -54,6 +55,9 @@ export default async function SettingsPage() {
           />
         )}
       </Card>
+
+      {/* Install as an app (renders nothing where installation isn't offered) */}
+      <InstallAppButton />
 
       {/* Subscription */}
       <Card className="mb-6 animate-fade-up hover:border-white/[0.15]" style={{ animationDelay: "80ms" }}>
