@@ -117,6 +117,7 @@ export default async function LibraryPage({ searchParams }: LibraryPageProps) {
                 locked={story.isPremium && !isPro}
                 locale={locale}
                 uiLanguage={user?.uiLanguage}
+                priority={i < 3}
               />
             </div>
           ))}

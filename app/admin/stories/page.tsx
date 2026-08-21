@@ -3,6 +3,7 @@ import { getAdminStoriesList } from "@/lib/queries";
 import { Badge } from "@/components/ui/Badge";
 import { difficultyLabel } from "@/lib/utils";
 import { PublishToggle } from "@/components/admin/PublishToggle";
+import { StoryCover } from "@/components/library/StoryCover";
 import { SUPPORTED_LANGUAGES, getTranslation } from "@/lib/languages";
 import type { Translations } from "@/types";
 import type { Metadata } from "next";
@@ -38,6 +39,7 @@ export default async function AdminStoriesPage() {
         <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-white/[0.07] bg-white/[0.02]">
+              <th className="text-left px-5 py-3 text-xs font-semibold text-cream/40 uppercase tracking-wide">Cover</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-cream/40 uppercase tracking-wide">Title</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-cream/40 uppercase tracking-wide">Level</th>
               <th className="text-left px-5 py-3 text-xs font-semibold text-cream/40 uppercase tracking-wide">Lines</th>
@@ -58,6 +60,16 @@ export default async function AdminStoriesPage() {
               });
               return (
               <tr key={story.id} className="hover:bg-white/[0.03] transition-colors">
+                <td className="py-4 pl-5 pr-0">
+                  <StoryCover
+                    src={story.coverImage}
+                    topic={story.topic}
+                    alt=""
+                    sizes="72px"
+                    emojiClassName="text-lg"
+                    className="h-11 w-[72px] rounded-md border border-white/10"
+                  />
+                </td>
                 <td className="px-5 py-4">
                   <div className="font-medium text-cream">{story.title}</div>
                   <div className="font-arabic text-cream/30 text-xs mt-0.5" dir="rtl">{getTranslation(titleTranslations, "ar")}</div>

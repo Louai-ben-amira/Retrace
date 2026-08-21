@@ -31,6 +31,8 @@ export const getAdminStoriesList = unstable_cache(
         titleTranslations: true,
         difficulty: true,
         isPublished: true,
+        coverImage: true,
+        topic: true,
         createdAt: true,
         _count: { select: { lines: true, progress: true } },
         lines: { select: { translations: true } },

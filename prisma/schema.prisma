@@ -50,6 +50,9 @@ model Story {
   isPremium               Boolean    @default(false)
   isPublished             Boolean    @default(false)
   isAIGenerated           Boolean    @default(false)
+  // Absolute URL of the library card artwork. Null is a first-class state: the card falls
+  // back to generated topic art rather than a broken image or an empty box.
+  coverImage              String?
   wordCount               Int        @default(0)
   createdAt               DateTime   @default(now())
   updatedAt               DateTime   @updatedAt

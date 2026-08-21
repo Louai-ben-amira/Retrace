@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { CoverImageField } from "@/components/admin/CoverImageField";
 import type { GeneratedStory } from "@/types";
 import { slugify } from "@/lib/utils";
 import { TOPIC_KEYS } from "@/lib/topics";
@@ -14,7 +15,7 @@ export function StoryForm() {
   const router = useRouter();
   const [generating, setGenerating] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [story, setStory] = useState<Partial<GeneratedStory> & { isPremium?: boolean }>({
+  const [story, setStory] = useState<Partial<GeneratedStory> & { isPremium?: boolean; coverImage?: string | null }>({
     difficulty: "BEGINNER",
     topic: "daily-life",
     lines: [],
@@ -109,6 +110,12 @@ export function StoryForm() {
           <Input label="Description (English)" value={story.description ?? ""} onChange={(e) => setStory((s) => ({ ...s, description: e.target.value }))} />
           <Input label="Description (Arabic)" value={story.descriptionAr ?? ""} onChange={(e) => setStory((s) => ({ ...s, descriptionAr: e.target.value }))} />
         </div>
+        <CoverImageField
+          value={story.coverImage ?? null}
+          topic={story.topic}
+          onChange={(coverImage) => setStory((s) => ({ ...s, coverImage }))}
+        />
+
         <div className="flex items-center gap-2">
           <input
             type="checkbox"

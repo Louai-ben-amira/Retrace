@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import { StoryCover } from "@/components/library/StoryCover";
 import { difficultyLabel } from "@/lib/utils";
 import { getTranslation, isRTL } from "@/lib/languages";
 import type { AppCopy } from "@/lib/i18n/app";
@@ -27,6 +28,15 @@ export function ContinueReadingCard({ story, progress, locale, t }: ContinueRead
       <div
         className="flex flex-col sm:flex-row sm:items-center gap-5 rounded-xl border border-white/15 border-l-[3px] border-l-brand-500 bg-white/[0.045] px-5 py-5"
       >
+        <StoryCover
+          src={story.coverImage}
+          topic={story.topic}
+          alt={story.title}
+          sizes="112px"
+          emojiClassName="text-3xl"
+          className="group hidden sm:block h-[72px] w-[112px] shrink-0 rounded-lg"
+        />
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <h3 className="font-semibold text-lg text-cream truncate">{story.title}</h3>

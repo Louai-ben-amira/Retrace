@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { CoverImageField } from "@/components/admin/CoverImageField";
 import { SUPPORTED_LANGUAGES } from "@/lib/languages";
 import { parseVocabTags } from "@/lib/utils";
 import { cn } from "@/lib/cn";
@@ -26,6 +27,7 @@ export function StoryEditForm({ story }: { story: StoryWithLines }) {
     title: story.title,
     description: story.description ?? "",
     isPremium: story.isPremium,
+    coverImage: story.coverImage,
     titleTranslations: asTranslations(story.titleTranslations),
     descriptionTranslations: asTranslations(story.descriptionTranslations),
     lines: story.lines.map((l) => ({ id: l.id, position: l.position, text: l.text, translations: asTranslations(l.translations) })),
@@ -71,6 +73,7 @@ export function StoryEditForm({ story }: { story: StoryWithLines }) {
           description: data.description,
           descriptionTranslations: data.descriptionTranslations,
           isPremium: data.isPremium,
+          coverImage: data.coverImage,
           lines: data.lines.map((l) => ({ id: l.id, text: l.text, translations: l.translations })),
         }),
       });
@@ -210,6 +213,12 @@ export function StoryEditForm({ story }: { story: StoryWithLines }) {
             ))}
           </div>
         </div>
+
+        <CoverImageField
+          value={data.coverImage}
+          topic={story.topic}
+          onChange={(coverImage) => setData((s) => ({ ...s, coverImage }))}
+        />
 
         <div className="flex items-center gap-2">
           <input type="checkbox" id="isPremium" checked={data.isPremium} onChange={(e) => setData((s) => ({ ...s, isPremium: e.target.checked }))} className="rounded border-white/20 bg-white/5 text-brand-500" />
